@@ -2,7 +2,7 @@
 
 
 
-\*\*Versión actual:\*\* v1.1.0 (corrected)  
+\*\*Versión actual:\*\* v1.2.3  
 
 \*\*Autor:\*\* Raizio
 
@@ -71,39 +71,6 @@ Su objetivo es ofrecer una herramienta sencilla y confiable para mantener el sis
 
 
 > ⚠️ Nota: algunas funciones como `CHKDSK` pueden requerir reinicio del sistema.
-
-
-
----
-
-
-
-\## 🗂️ Releases
-
-
-
-\- \*\*v1.1.0 (corrected)\*\*  
-
-&nbsp; - Log automático con estado EXITO/ERROR.  
-
-&nbsp; - Resumen en pantalla al finalizar mantenimiento completo.  
-
-&nbsp; - Nueva opción de información del sistema.  
-
-&nbsp; - Mejoras de claridad en menú.
-
-
-
-\- \*\*v1.0.2\*\*  
-
-&nbsp; - Versión inicial publicada en GitHub.  
-
-&nbsp; - Funciones básicas de mantenimiento (SFC, DISM, limpieza, optimización, red).
-
-
-
----
-
 
 
 \## 🤝 Contribuciones
