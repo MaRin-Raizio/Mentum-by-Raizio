@@ -23,6 +23,9 @@ powershell -command "$PSDefaultParameterValues['Out-File:Encoding']='utf8'; Star
 :: =============================================
 :: Bloque 1 - Encabezado y selección de idioma
 :: =============================================
+title Mantenimiento de Windows by Raizio v1.2.3
+color 0A
+
 echo =============================================
 echo   Selecciona el idioma / Select language
 echo =============================================
@@ -30,9 +33,6 @@ echo 1. Espanol
 echo 2. English
 echo.
 set /p lang=Elige una opcion (Choose an option): 
-
-title Mantenimiento de Windows by Raizio v1.2.2
-color 0A
 
 :: Saltar al menú correcto
 if "%lang%"=="1" goto MENU_ES
@@ -42,12 +42,7 @@ echo Invalid option / Opcion no valida
 timeout /t -1 >nul
 exit
 
-:: =============================================
-:: Bloque 2 - Menús separados ES / EN
-:: =============================================
-
 :MENU_ES
-:: Verificar administrador en español
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo =====================================================
@@ -64,7 +59,7 @@ if %errorlevel% neq 0 (
 
 cls
 echo =============================================
-echo   MANTENIMIENTO WINDOWS by Raizio - v1.2.2
+echo   MANTENIMIENTO WINDOWS by Raizio - v1.2.3
 echo =============================================
 echo 1. Reparacion rapida
 echo 2. Revisar archivos del sistema
@@ -99,7 +94,6 @@ if "%opcion%"=="14" exit
 goto MENU_ES
 
 :MENU_EN
-:: Verify administrator in English
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo =====================================================
@@ -116,7 +110,7 @@ if %errorlevel% neq 0 (
 
 cls
 echo =============================================
-echo   WINDOWS MAINTENANCE by Raizio - v1.2.2
+echo   WINDOWS MAINTENANCE by Raizio - v1.2.3
 echo =============================================
 echo 1. Quick repair
 echo 2. Check system files
@@ -301,28 +295,31 @@ goto MENU_EN
 :SYSINFO_ES
 cls
 echo ============================================
-echo INFORMACION DEL SISTEMA - v1.2.2
+echo INFORMACION DEL SISTEMA - v1.2.3
 echo ============================================
 
-for /f "delims=" %%a in ('powershell -command "(Get-CimInstance Win32_OperatingSystem).Caption"') do set SO=%%a
+for /f "delims=" %%a in ('powershell -NoProfile -Command "(Get-CimInstance Win32_OperatingSystem).Caption"') do set SO=%%a
 echo Sistema operativo: %SO%
 
-for /f "delims=" %%a in ('powershell -command "(Get-CimInstance Win32_OperatingSystem).OSArchitecture"') do set Arch=%%a
+for /f "delims=" %%a in ('powershell -NoProfile -Command "(Get-CimInstance Win32_OperatingSystem).OSArchitecture"') do set Arch=%%a
 echo Arquitectura: %Arch%
 
-for /f "delims=" %%a in ('powershell -command "(Get-CimInstance Win32_OperatingSystem).Version"') do set Ver=%%a
+for /f "delims=" %%a in ('powershell -NoProfile -Command "(Get-CimInstance Win32_OperatingSystem).Version"') do set Ver=%%a
 echo Version del sistema: %Ver%
 
 echo Nombre del equipo: %COMPUTERNAME%
 echo Usuario actual: %USERNAME%
 
-for /f "delims=" %%a in ('powershell -command "(Get-CimInstance Win32_Processor).Name"') do set CPU=%%a
+for /f "delims=" %%a in ('powershell -NoProfile -Command "(Get-CimInstance Win32_Processor).Name"') do set CPU=%%a
 echo Procesador: %CPU%
 
-for /f %%i in ('powershell -command "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB"') do set RAMGB=%%i
+for /f %%i in ('powershell -NoProfile -Command "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB"') do set RAMGB=%%i
 echo Memoria RAM total: %RAMGB% GB
 
-for /f %%i in ('powershell -command "(Get-CimInstance Win32_LogicalDisk -Filter \"DeviceID='C:'\").FreeSpace / 1GB"') do set FreeGB=%%i
+:: FIX robusto: evitar crash y notación científica
+set FreeGB=
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "[math]::Round((Get-CimInstance Win32_LogicalDisk -Filter 'DeviceID=''C:''').FreeSpace / 1GB)"`) do set FreeGB=%%i
+if "%FreeGB%"=="" set FreeGB=0
 echo Espacio libre en disco C: %FreeGB% GB
 
 echo.
@@ -334,28 +331,31 @@ goto MENU_ES
 :SYSINFO_EN
 cls
 echo ============================================
-echo SYSTEM INFORMATION - v1.2.2
+echo SYSTEM INFORMATION - v1.2.3
 echo ============================================
 
-for /f "delims=" %%a in ('powershell -command "(Get-CimInstance Win32_OperatingSystem).Caption"') do set SO=%%a
+for /f "delims=" %%a in ('powershell -NoProfile -Command "(Get-CimInstance Win32_OperatingSystem).Caption"') do set SO=%%a
 echo Operating System: %SO%
 
-for /f "delims=" %%a in ('powershell -command "(Get-CimInstance Win32_OperatingSystem).OSArchitecture"') do set Arch=%%a
+for /f "delims=" %%a in ('powershell -NoProfile -Command "(Get-CimInstance Win32_OperatingSystem).OSArchitecture"') do set Arch=%%a
 echo Architecture: %Arch%
 
-for /f "delims=" %%a in ('powershell -command "(Get-CimInstance Win32_OperatingSystem).Version"') do set Ver=%%a
+for /f "delims=" %%a in ('powershell -NoProfile -Command "(Get-CimInstance Win32_OperatingSystem).Version"') do set Ver=%%a
 echo System Version: %Ver%
 
 echo Computer Name: %COMPUTERNAME%
 echo Current User: %USERNAME%
 
-for /f "delims=" %%a in ('powershell -command "(Get-CimInstance Win32_Processor).Name"') do set CPU=%%a
+for /f "delims=" %%a in ('powershell -NoProfile -Command "(Get-CimInstance Win32_Processor).Name"') do set CPU=%%a
 echo Processor: %CPU%
 
-for /f %%i in ('powershell -command "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB"') do set RAMGB=%%i
+for /f %%i in ('powershell -NoProfile -Command "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB"') do set RAMGB=%%i
 echo Total RAM: %RAMGB% GB
 
-for /f %%i in ('powershell -command "(Get-CimInstance Win32_LogicalDisk -Filter \"DeviceID='C:'\").FreeSpace / 1GB"') do set FreeGB=%%i
+:: FIX robust: avoid crash and scientific notation
+set FreeGB=
+for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "[math]::Round((Get-CimInstance Win32_LogicalDisk -Filter 'DeviceID=''C:''').FreeSpace / 1GB)"`) do set FreeGB=%%i
+if "%FreeGB%"=="" set FreeGB=0
 echo Free space on disk C: %FreeGB% GB
 
 echo.
