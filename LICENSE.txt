@@ -1,0 +1,31 @@
+﻿Mentum 2.0.0
+------------
+
+Mentum nació como un proyecto de claridad y resiliencia: un recordatorio de que incluso
+en la oscuridad, siempre puede encenderse una chispa. Cada línea de código fue escrita
+para aportar confianza, transparencia y esperanza. Este software es libre, abierto y
+compartido con la comunidad, porque creemos que la luz se multiplica cuando se comparte.
+
+A continuación se presenta la licencia legal que regula el uso de Mentum:
+
+MIT License
+-----------
+
+Copyright (c) 2026 MaRin Raizio
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of Mentum and associated documentation files (the "Software"), to deal
+in Mentum without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of Mentum, and to permit persons to whom Mentum is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of Mentum.
+
+MENTUM IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH MENTUM OR THE USE OR OTHER DEALINGS IN MENTUM.

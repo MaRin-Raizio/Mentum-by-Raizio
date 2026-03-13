@@ -1,0 +1,17 @@
+Bienvenido a Mentum 2.0.0
+
+Cada instalación de Mentum es más que software:
+es un recordatorio de que la claridad puede nacer de la lucha,
+y que la resiliencia se convierte en legado.
+
+Mentum es mi regalo para el mundo,
+mi intento por hacer de tu Windows un lugar más claro,
+más humano y mejor.
+
+Gracias por confiar en este proyecto.
+Que Mentum te acompañe en tu camino creativo y práctico.
+
+Encuentra más información y actualizaciones en nuestro repositorio:
+https://github.com/MaRin-Raizio/Mentum-by-Raizio
+
+— MaRin Raizio

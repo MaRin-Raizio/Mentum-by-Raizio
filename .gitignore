@@ -1,0 +1,4 @@
+# Ignorar carpetas de compilación y publicación
+bin/
+obj/
+publish/
