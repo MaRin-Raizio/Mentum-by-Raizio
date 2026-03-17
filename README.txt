@@ -1,45 +1,30 @@
-﻿Mentum 2.0.0
-------------
+🌌 Mentum v2.0.0
+✨ De una idea a una aplicación
+Mentum nació de una pregunta sencilla: “¿Cómo hacer mantenimiento en un solo lugar?”.
+De esa chispa surgió un rudimentario archivo .bat, que me mostró el camino y me enseñó que podía ayudar a los demás. Fue tosco, fue limitado, pero fue el inicio de una travesía llena de obstáculos, pruebas y aprendizajes.
+Hoy, Mentum se transforma en una aplicación con forma, estética y propósito. Este es mi regalo para el mundo: una herramienta que busca ser útil, accesible y poética al mismo tiempo.
 
-El nombre "Mentum" surge de la raíz latina del sufijo "-mentum", que significa acción,
-efecto o proceso. Lo encontramos en palabras como "mantenimiento", que proviene de
-"manus" (mano) y "tenere" (sostener), acompañado de "-mentum" como el acto de mantener.
-Mentum, entonces, evoca frescura, renovación, el proceso de sostener y dar vida a lo
-que parecía desgastado. Suena a menta, a algo fresco, a lo que está "amentado", y esa
-es precisamente la esencia: mantener las cosas vivas, claras y funcionando.
+🚀 Qué encontrarás en Mentum
+- Una interfaz visual en WPF, clara y amigable.
+- Botón del logo que da identidad.
+- Botones de funciones con nombres accesibles y fáciles de entender.
+- Botón de información del sistema y botón de herramientas avanzadas, que abren ventanas separadas para mantener la interfaz limpia.
+- Botón para salir directo y sencillo.
+- LogBox para leer en tiempo real lo que se va realizando.
+- Barra de progreso que acompaña cada acción.
+- Firma morada (porque sí, y porque el morado es mi color favorito 💜), con enlaces a TikTok y Ko‑fi.
 
-Este software es mi regalo para el mundo. Nació en un tiempo en el que mi carrera aún
-no podía ejercerse, cuando los recursos eran escasos y la incertidumbre era grande.
-Mentum fue mi escape, mi refugio, mi manera de transformar la frustración en creación.
-Cada línea de código es testimonio de esa lucha, de esa esperanza, de esa voluntad de
-dejar una huella. Es mi forma de decir: aquí estoy, y aunque no tenga todo, puedo dar
-algo que quizá ilumine a otros.
+🔓 Transparencia y código abierto
+Mentum es un proyecto de código abierto.
+- Puedes descargar el source code completo y verificar cada línea por ti mismo.
+- O, si lo prefieres, descargar directamente el instalador o la versión portable para usarlo de inmediato.
+Mi compromiso es que Mentum sea transparente, confiable y abierto a nuevas ideas que lo nutran.
 
-Mentum no es solo un programa: es un compañero que busca aportar claridad y confianza
-en cada ejecución. Su propósito es ayudarte a mantener tu sistema transparente,
-organizado y confiable, con un toque humano y poético.
+💸 Apoya el proyecto
+Si quieres ayudar a que Mentum siga creciendo, puedes hacerlo a través de donaciones en Ko‑fi.
+Tu apoyo me permite seguir desarrollando y mejorando esta herramienta.
 
-Funciones principales:
-- Información del sistema: acceso rápido a datos de CPU, RAM, disco y red.
-- Ejecución de comandos: transparencia total mostrando los procesos que se ejecutan.
-- LogBox: registro claro y coloreado de resultados, diferenciando éxito, error e información.
-- Barra de progreso proporcional: retroalimentación visual precisa en cada tarea.
-- Opciones avanzadas: muestra los comandos crudos para usuarios que buscan control total.
-- Branding integrado: acceso directo a GitHub y Ko-fi para comunidad y soporte.
-
-Mentum es resiliencia hecha software. Es un recordatorio de que incluso en los momentos
-más oscuros, siempre puede encenderse una chispa que ilumine el camino. Es mi manera
-de decirle al mundo: aquí dejo algo que puede servir, aunque sea pequeño, aunque sea
-imperfecto, pero lleno de intención y de luz.
-
-Donaciones voluntarias:
------------------------
-Mentum es y será gratuito. Sin embargo, si este proyecto te inspira, te ayuda o
-simplemente deseas apoyarlo, puedes hacerlo a través de Ko-fi. No es obligación ni
-expectativa: es solo una invitación abierta para quienes deseen contribuir a que
-Mentum siga creciendo. Tu apoyo, sea grande o pequeño, es una señal de que este regalo
-encuentra eco en otros corazones.
-
-Gracias por instalarlo y ser parte de este viaje. Gracias por creer en mí.
-
-- MaRin Raizio
+✨ Mensaje final
+Mentum 2.0.0 es más que un programa: es el resultado de un viaje lleno de obstáculos, aprendizajes y sueños.
+De un .bat rudimentario a una aplicación con forma y color, con una firma morada que late como símbolo de alegría y esperanza.
+Este es mi regalo para el mundo: una chispa que busca iluminar pantallas y corazones, un puente entre lo técnico y lo poético.
