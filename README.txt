@@ -1,3 +1,4 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/A0A61UEY6S)
 🌌 Mentum v2.0.0
 ✨ De una idea a una aplicación
 Mentum nació de una pregunta sencilla: “¿Cómo hacer mantenimiento en un solo lugar?”.
