@@ -11,18 +11,15 @@ namespace MentumLauncher
         {
             base.OnStartup(e);
 
-            // Obtiene automáticamente la versión actual del ejecutable
-            string currentVersion = Assembly.GetExecutingAssembly()
-                                            .GetName()
-                                            .Version
-                                            .ToString();
+            // 🔎 Obtiene automáticamente la versión bonita desde AssemblyInformationalVersion
+            string currentVersion = UpdateChecker.GetInformationalVersion();
 
-            // Llama al checker con la versión actual
-            await UpdateChecker.CheckForUpdatesAsync(currentVersion);
-
-            // Aquí puedes continuar con la inicialización normal del launcher
+            // Inicialización normal del launcher
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
+
+            // Llama al checker pasando la ventana como owner
+            await UpdateChecker.CheckForUpdatesAsync(mainWindow);
         }
     }
 }

@@ -1,10 +1,16 @@
+using System.Reflection;
 using System.Windows;
 
+//  Versión interna (4 dígitos, lo que .NET espera)
+[assembly: AssemblyVersion("2.1.0.0")]
+
+//  Versión del archivo (también 4 dígitos, visible en propiedades del ejecutable)
+[assembly: AssemblyFileVersion("2.1.0.0")]
+
+//  Versión informativa (la “bonita” que se muestra al usuario)
+[assembly: AssemblyInformationalVersion("2.1.0")]
+
 [assembly: ThemeInfo(
-    ResourceDictionaryLocation.None,            //where theme specific resource dictionaries are located
-                                                //(used if a resource is not found in the page,
-                                                // or application resource dictionaries)
-    ResourceDictionaryLocation.SourceAssembly   //where the generic resource dictionary is located
-                                                //(used if a resource is not found in the page,
-                                                // app, or any theme specific resource dictionaries)
+    ResourceDictionaryLocation.None,
+    ResourceDictionaryLocation.SourceAssembly
 )]

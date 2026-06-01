@@ -5,58 +5,320 @@
     Title="Opciones avanzadas"
     Width="700"
     Height="500"
-    Background="#2E2E2E"
-    FontFamily="pack://application:,,,/Fonts/#Exo 2">
+    MinHeight="480"
+    AllowsTransparency="False"
+    Background="#0F1117"
+    FontFamily="Segoe UI"
+    ResizeMode="CanMinimize"
+    WindowStyle="None">
 
-    <StackPanel Margin="15">
-        <!--  Título  -->
-        <TextBlock
-            Margin="0,0,0,20"
-            FontSize="22"
-            FontWeight="Bold"
-            Foreground="#9000F9"
-            Text="Opciones avanzadas de Mentum" />
+    <Window.Resources>
 
-        <!--  Lista de comandos reales  -->
-        <ListBox
-            Name="ListaComandos"
-            Height="300"
-            Margin="0,0,0,15"
-            Background="#D3D3D3"
-            FontFamily="pack://application:,,,/Fonts/#Consolas"
-            Foreground="Black">
+        <Style x:Key="BaseBtn" TargetType="Button">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="7">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.80" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.60" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-            <!--  Comandos tal cual  -->
-            <ListBoxItem Content="sfc /scannow" />
-            <ListBoxItem Content="DISM /Online /Cleanup-Image /RestoreHealth" />
-            <ListBoxItem Content="DISM /Online /Cleanup-Image /ScanHealth" />
-            <ListBoxItem Content="DISM /Online /Cleanup-Image /CheckHealth" />
-            <ListBoxItem Content="chkdsk C: /f /r" />
-            <ListBoxItem Content="ipconfig /flushdns" />
-            <ListBoxItem Content="netsh winsock reset" />
-            <ListBoxItem Content="netsh int ip reset" />
-            <ListBoxItem Content="systeminfo" />
-            <ListBoxItem Content="defrag C: /O" />
-            <ListBoxItem Content="tasklist" />
-            <ListBoxItem Content="powercfg /energy" />
-            <ListBoxItem Content="fsutil behavior query DisableDeleteNotify" />
-        </ListBox>
+        <Style
+            x:Key="BtnGreen"
+            BasedOn="{StaticResource BaseBtn}"
+            TargetType="Button">
+            <Setter Property="Background" Value="#0D2318" />
+            <Setter Property="BorderBrush" Value="#166534" />
+            <Setter Property="Foreground" Value="#86EFAC" />
+        </Style>
+        <Style
+            x:Key="BtnRed"
+            BasedOn="{StaticResource BaseBtn}"
+            TargetType="Button">
+            <Setter Property="Background" Value="#200F0F" />
+            <Setter Property="BorderBrush" Value="#7F1D1D" />
+            <Setter Property="Foreground" Value="#FCA5A5" />
+        </Style>
 
-        <!--  Botón de ejecución  -->
-        <Button
-            Margin="0,0,0,10"
-            Background="#32CD32"
-            Click="BtnEjecutar_Click"
-            Content="Ejecutar comando seleccionado"
-            FontWeight="Bold"
-            Foreground="Black" />
+        <Style x:Key="TitleBtn" TargetType="Button">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1E1530" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-        <!--  Botón de cierre/regreso  -->
-        <Button
-            Background="#FF6347"
-            Click="BtnCerrar_Click"
-            Content="Regresar al menú básico"
-            FontWeight="Bold"
-            Foreground="White" />
-    </StackPanel>
+        <Style
+            x:Key="TitleBtnClose"
+            BasedOn="{StaticResource TitleBtn}"
+            TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#200F0F" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DarkListBox" TargetType="ListBox">
+            <Setter Property="Background" Value="#080A0F" />
+            <Setter Property="BorderBrush" Value="#1E2130" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="#9CA3AF" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBox">
+                        <Border
+                            Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Padding" Value="10,7" />
+                        <Setter Property="FontFamily" Value="Consolas" />
+                        <Setter Property="FontSize" Value="12" />
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border
+                                        x:Name="itemBd"
+                                        Margin="0,1"
+                                        Padding="{TemplateBinding Padding}"
+                                        Background="Transparent"
+                                        CornerRadius="5">
+                                        <TextBlock
+                                            x:Name="txt"
+                                            Foreground="#9CA3AF"
+                                            Text="{TemplateBinding Content}" />
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="itemBd" Property="Background" Value="#1C1F2B" />
+                                            <Setter TargetName="txt" Property="Foreground" Value="#D1D5DB" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="itemBd" Property="Background" Value="#1E1530" />
+                                            <Setter TargetName="txt" Property="Foreground" Value="#C4B5FD" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </Window.Resources>
+
+    <Border BorderBrush="#6D28D9" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52" />
+                <RowDefinition Height="1" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  ══ BARRA DE TÍTULO (opción 2: fondo morado oscuro) ══  -->
+            <Grid
+                Grid.Row="0"
+                Background="#1A0A2E"
+                MouseDown="TitleBar_MouseDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel
+                    Grid.Column="0"
+                    Margin="16,0,0,0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Border
+                        Width="36"
+                        Height="36"
+                        Margin="0,0,12,0"
+                        Background="#1E1530"
+                        BorderBrush="#A78BFA"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            Foreground="#A78BFA"
+                            Text="⚙" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="#C4B5FD"
+                            LineHeight="16"
+                            Text="Herramientas avanzadas" />
+                        <TextBlock
+                            FontFamily="Consolas"
+                            FontSize="10"
+                            Foreground="#4B5563"
+                            LineHeight="14"
+                            Text="modo avanzado · Mentum" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Column="2"
+                    Margin="0,0,10,0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Button
+                        Click="BtnMinimize_Click"
+                        Content="—"
+                        FontFamily="Consolas"
+                        Foreground="#A78BFA"
+                        Style="{StaticResource TitleBtn}" />
+                    <Button
+                        Click="BtnCerrar_Click"
+                        Content="✕"
+                        FontFamily="Consolas"
+                        Foreground="#FCA5A5"
+                        Style="{StaticResource TitleBtnClose}" />
+                </StackPanel>
+            </Grid>
+
+            <Rectangle
+                Grid.Row="1"
+                Height="1"
+                Fill="#6D28D9" />
+
+            <!--  ══ CONTENIDO ══  -->
+            <Grid Grid.Row="2" Margin="22,16,22,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0">
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="Bold"
+                        Foreground="#A78BFA"
+                        Text="Herramientas avanzadas de Mentum" />
+                    <TextBlock
+                        Margin="0,4,0,0"
+                        FontSize="11"
+                        Foreground="#4B5563"
+                        Text="Selecciona un comando y ejecútalo directamente sobre el sistema." />
+                </StackPanel>
+
+                <TextBlock
+                    Grid.Row="2"
+                    FontSize="10"
+                    FontWeight="SemiBold"
+                    Foreground="#4B5563"
+                    Text="COMANDOS DISPONIBLES" />
+
+                <ListBox
+                    Name="ListaComandos"
+                    Grid.Row="4"
+                    Style="{StaticResource DarkListBox}">
+                    <ListBoxItem Content="sfc /scannow" />
+                    <ListBoxItem Content="DISM /Online /Cleanup-Image /RestoreHealth" />
+                    <ListBoxItem Content="DISM /Online /Cleanup-Image /ScanHealth" />
+                    <ListBoxItem Content="DISM /Online /Cleanup-Image /CheckHealth" />
+                    <ListBoxItem Content="chkdsk C: /f /r" />
+                    <ListBoxItem Content="ipconfig /flushdns" />
+                    <ListBoxItem Content="netsh winsock reset" />
+                    <ListBoxItem Content="netsh int ip reset" />
+                    <ListBoxItem Content="systeminfo" />
+                    <ListBoxItem Content="defrag C: /O" />
+                    <ListBoxItem Content="tasklist" />
+                    <ListBoxItem Content="powercfg /energy" />
+                    <ListBoxItem Content="fsutil behavior query DisableDeleteNotify" />
+                </ListBox>
+
+                <Button
+                    Grid.Row="6"
+                    Click="BtnEjecutar_Click"
+                    Content="▶  Ejecutar comando seleccionado"
+                    Style="{StaticResource BtnGreen}" />
+                <Button
+                    Grid.Row="8"
+                    Click="BtnCerrar_Click"
+                    Content="← Regresar al menú principal"
+                    Style="{StaticResource BtnRed}" />
+            </Grid>
+        </Grid>
+    </Border>
 </Window>

@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Input;
 
 namespace MentumLauncher
 {
@@ -17,6 +19,18 @@ namespace MentumLauncher
             _mainWindow = mainWindow;
         }
 
+        //botones nuevos 
+
+        private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                this.DragMove();
+        }
+
+        private void BtnMinimize_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
         // Ejecutar el comando seleccionado y enviar salida al LogBox del MainWindow
         private void BtnEjecutar_Click(object sender, RoutedEventArgs e)
         {
