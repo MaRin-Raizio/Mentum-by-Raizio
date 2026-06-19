@@ -226,7 +226,7 @@
                             FontSize="10"
                             Foreground="#4B5563"
                             LineHeight="14"
-                            Text="modo avanzado · Mentum" />
+                            Text="modo avanzado · v2.2.0" />
                     </StackPanel>
                 </StackPanel>
 
@@ -293,19 +293,23 @@
                     Name="ListaComandos"
                     Grid.Row="4"
                     Style="{StaticResource DarkListBox}">
-                    <ListBoxItem Content="sfc /scannow" />
-                    <ListBoxItem Content="DISM /Online /Cleanup-Image /RestoreHealth" />
-                    <ListBoxItem Content="DISM /Online /Cleanup-Image /ScanHealth" />
-                    <ListBoxItem Content="DISM /Online /Cleanup-Image /CheckHealth" />
-                    <ListBoxItem Content="chkdsk C: /f /r" />
-                    <ListBoxItem Content="ipconfig /flushdns" />
-                    <ListBoxItem Content="netsh winsock reset" />
-                    <ListBoxItem Content="netsh int ip reset" />
-                    <ListBoxItem Content="systeminfo" />
+                    <!--  Disco y optimización  -->
                     <ListBoxItem Content="defrag C: /O" />
-                    <ListBoxItem Content="tasklist" />
-                    <ListBoxItem Content="powercfg /energy" />
                     <ListBoxItem Content="fsutil behavior query DisableDeleteNotify" />
+                    <!--  Energía y batería  -->
+                    <ListBoxItem Content="powercfg /energy" />
+                    <ListBoxItem Content="powercfg /batteryreport" />
+                    <!--  Red y seguridad  -->
+                    <ListBoxItem Content="netstat -ano" />
+                    <ListBoxItem Content="arp -a" />
+                    <!--  Sistema y arranque  -->
+                    <ListBoxItem Content="bcdedit" />
+                    <ListBoxItem Content="driverquery" />
+                    <ListBoxItem Content="schtasks /query /fo LIST" />
+                    <!--  Información  -->
+                    <ListBoxItem Content="winver" />
+                    <ListBoxItem Content="msinfo32" />
+                    <ListBoxItem Content="wmic cpu get name,numberofcores,maxclockspeed" />
                 </ListBox>
 
                 <Button

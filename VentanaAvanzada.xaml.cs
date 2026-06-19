@@ -4,7 +4,6 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Input;
 
 namespace MentumLauncher
 {
@@ -15,8 +14,20 @@ namespace MentumLauncher
         // Constructor que recibe la referencia al MainWindow
         public VentanaAvanzada(MainWindow mainWindow)
         {
-            InitializeComponent();
-            _mainWindow = mainWindow;
+            try
+            {
+                InitializeComponent();
+                _mainWindow = mainWindow;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error al abrir VentanaAvanzada:\n\n" + ex.Message + "\n\n" + ex.InnerException?.Message,
+                    "Error de inicialización",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                this.Close();
+            }
         }
 
         //botones nuevos 

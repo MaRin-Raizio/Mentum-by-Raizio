@@ -2,10 +2,10 @@
     x:Class="MentumLauncher.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Mentum Launcher 2.1.0"
+    Title="Mentum Launcher 2.2.0"
     Width="860"
-    Height="660"
-    MinHeight="620"
+    Height="740"
+    MinHeight="700"
     AllowsTransparency="False"
     Background="#0F1117"
     FontFamily="Segoe UI"
@@ -96,6 +96,15 @@
             <Setter Property="BorderBrush" Value="#7F1D1D" />
             <Setter Property="Foreground" Value="#FCA5A5" />
         </Style>
+        <Style
+            x:Key="BtnCancel"
+            BasedOn="{StaticResource BaseBtn}"
+            TargetType="Button">
+            <Setter Property="Background" Value="#1F1208" />
+            <Setter Property="BorderBrush" Value="#C2410C" />
+            <Setter Property="BorderThickness" Value="1.5" />
+            <Setter Property="Foreground" Value="#FB923C" />
+        </Style>
 
         <!--  Botón de titlebar (minimizar / cerrar)  -->
         <Style x:Key="TitleBtn" TargetType="Button">
@@ -163,6 +172,74 @@
             <Setter Property="FontFamily" Value="Segoe UI" />
         </Style>
 
+
+
+
+
+
+        <!--  ScrollBar minimalista  -->
+        <Style
+            xmlns:Thumb="clr-namespace:System.Windows.Controls.Primitives;assembly=PresentationFramework"
+            x:Key="ScrollThumbStyle"
+            TargetType="{x:Type Thumb}" />
+
+        <Style x:Key="SlimScrollBar" TargetType="{x:Type ScrollBar}">
+            <Setter Property="Width" Value="6" />
+            <Setter Property="MinWidth" Value="6" />
+            <Setter Property="Background" Value="#0D0F18" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid
+                            x:Name="GridRoot"
+                            Width="6"
+                            Background="#0D0F18">
+                            <Track
+                                x:Name="PART_Track"
+                                Focusable="False"
+                                IsDirectionReversed="True">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton
+                                        x:Name="PageUp"
+                                        Command="ScrollBar.PageUpCommand"
+                                        Focusable="False"
+                                        Opacity="0" />
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb x:Name="Thumb">
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="{x:Type Thumb}">
+                                                <Border
+                                                    x:Name="ThumbBorder"
+                                                    Margin="1,2,1,2"
+                                                    Background="#2A2D3A"
+                                                    CornerRadius="3" />
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ThumbBorder" Property="Background" Value="#4B5563" />
+                                                    </Trigger>
+                                                    <Trigger Property="IsDragging" Value="True">
+                                                        <Setter TargetName="ThumbBorder" Property="Background" Value="#6B7280" />
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton
+                                        x:Name="PageDown"
+                                        Command="ScrollBar.PageDownCommand"
+                                        Focusable="False"
+                                        Opacity="0" />
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
 
     <Border
@@ -227,7 +304,7 @@
                             FontSize="10"
                             Foreground="#4B5563"
                             LineHeight="14"
-                            Text="stable release · v2.1.0" />
+                            Text="stable release · v2.2.0" />
                     </StackPanel>
                 </StackPanel>
 
@@ -305,28 +382,32 @@
                         Grid.Column="0"
                         Click="BtnQuickRepair_Click"
                         Content="⚡  Reparación rápida"
-                        Style="{StaticResource BtnGreen}" />
+                        Style="{StaticResource BtnGreen}"
+                        ToolTip="Ejecuta SFC y DISM CheckHealth para detectar y reparar archivos del sistema rápidamente." />
                     <Button
                         x:Name="BtnDeepScan"
                         Grid.Row="0"
                         Grid.Column="2"
                         Click="BtnDeepScan_Click"
                         Content="🔍  Escaneo profundo DISM"
-                        Style="{StaticResource BtnGreen}" />
+                        Style="{StaticResource BtnGreen}"
+                        ToolTip="Analiza la imagen de Windows en busca de daños con DISM ScanHealth." />
                     <Button
                         x:Name="BtnRestoreImage"
                         Grid.Row="2"
                         Grid.Column="0"
                         Click="BtnRestoreImage_Click"
                         Content="🛡  Restaurar imagen Windows"
-                        Style="{StaticResource BtnGreen}" />
+                        Style="{StaticResource BtnGreen}"
+                        ToolTip="Descarga y repara archivos corruptos de Windows con DISM RestoreHealth." />
                     <Button
                         x:Name="BtnResetNetwork"
                         Grid.Row="2"
                         Grid.Column="2"
                         Click="BtnResetNetwork_Click"
                         Content="🌐  Reparar configuración de red"
-                        Style="{StaticResource BtnGreen}" />
+                        Style="{StaticResource BtnGreen}"
+                        ToolTip="Resetea IP, DNS, Winsock y TCP/IP para resolver problemas de conectividad." />
                 </Grid>
 
                 <!--  Disco  -->
@@ -344,6 +425,8 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="8" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="8" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
                     <Button
                         x:Name="BtnDiskCheck"
@@ -351,28 +434,42 @@
                         Grid.Column="0"
                         Click="BtnDiskCheck_Click"
                         Content="💾  Revisar disco (CHKDSK)"
-                        Style="{StaticResource BtnBlue}" />
+                        Style="{StaticResource BtnBlue}"
+                        ToolTip="Comprueba y repara errores en el disco C: con CHKDSK. Puede requerir reinicio." />
                     <Button
                         x:Name="BtnDiskOptimization"
                         Grid.Row="0"
                         Grid.Column="2"
                         Click="BtnDiskOptimization_Click"
                         Content="🚀  Optimizar disco"
-                        Style="{StaticResource BtnBlue}" />
+                        Style="{StaticResource BtnBlue}"
+                        ToolTip="Desfragmenta o realiza TRIM en el disco C: según sea HDD o SSD." />
                     <Button
                         x:Name="BtnTempCleanup"
                         Grid.Row="2"
                         Grid.Column="0"
                         Click="BtnTempCleanup_Click"
                         Content="🗑  Limpiar archivos temporales"
-                        Style="{StaticResource BtnAmber}" />
+                        Style="{StaticResource BtnAmber}"
+                        ToolTip="Elimina archivos temporales del sistema con cleanmgr." />
                     <Button
                         x:Name="BtnSystemInfo"
                         Grid.Row="2"
                         Grid.Column="2"
                         Click="BtnSystemInfo_Click"
                         Content="ℹ  Información del sistema"
-                        Style="{StaticResource BtnNeutral}" />
+                        Style="{StaticResource BtnNeutral}"
+                        ToolTip="Abre la ventana de información con CPU, RAM y detalles del sistema en tiempo real." />
+                    <!--  Limpieza profunda: ancho completo  -->
+                    <Button
+                        x:Name="BtnDeepClean"
+                        Grid.Row="4"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        Click="BtnDeepClean_Click"
+                        Content="🧹  Limpieza profunda del sistema"
+                        Style="{StaticResource BtnAmber}"
+                        ToolTip="Limpieza completa: caché de Windows Update, Temp, Prefetch, papelera y miniaturas." />
                 </Grid>
 
                 <!--  Mantenimiento completo  -->
@@ -381,7 +478,8 @@
                     Grid.Row="6"
                     Click="BtnFullMaintenance_Click"
                     Content="🛠  Mantenimiento completo del sistema"
-                    Style="{StaticResource BtnFeatured}" />
+                    Style="{StaticResource BtnFeatured}"
+                    ToolTip="Ejecuta SFC, DISM RestoreHealth, CHKDSK y desfragmentación en secuencia." />
 
                 <!--  Herramientas  -->
                 <TextBlock
@@ -413,13 +511,63 @@
                     Fill="#1E2130" />
 
                 <!--  Log  -->
-                <TextBlock
-                    Grid.Row="13"
-                    Margin="0,0,0,6"
-                    FontSize="10"
-                    FontWeight="SemiBold"
-                    Foreground="#4B5563"
-                    Text="REGISTRO DE ACCIONES" />
+                <Grid Grid.Row="13" Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="8" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontSize="10"
+                        FontWeight="SemiBold"
+                        Foreground="#4B5563"
+                        Text="REGISTRO DE ACCIONES" />
+                    <TextBlock
+                        x:Name="TimerLabel"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        FontFamily="Consolas"
+                        FontSize="10"
+                        Foreground="#374151"
+                        Text="" />
+                    <Button
+                        x:Name="BtnExportLog"
+                        Grid.Column="3"
+                        Height="22"
+                        Padding="8,0"
+                        Background="#0D1929"
+                        BorderBrush="#1E3A5F"
+                        BorderThickness="1"
+                        Click="BtnExportLog_Click"
+                        Cursor="Hand"
+                        FontFamily="Consolas"
+                        FontSize="10"
+                        Foreground="#93C5FD"
+                        ToolTip="Guardar log en el escritorio">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border
+                                    x:Name="bd"
+                                    Padding="{TemplateBinding Padding}"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="5">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="bd" Property="Opacity" Value="0.75" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <TextBlock Text="💾 exportar" />
+                    </Button>
+                </Grid>
                 <Border
                     Grid.Row="14"
                     Background="#080A0F"
@@ -435,17 +583,42 @@
                         FontSize="11"
                         Foreground="#4ADE80"
                         IsReadOnly="True"
-                        VerticalScrollBarVisibility="Auto" />
+                        VerticalScrollBarVisibility="Auto">
+                        <RichTextBox.Resources>
+                            <Style BasedOn="{StaticResource SlimScrollBar}" TargetType="{x:Type ScrollBar}" />
+                        </RichTextBox.Resources>
+                    </RichTextBox>
                 </Border>
 
                 <!--  Progreso  -->
-                <TextBlock
-                    Grid.Row="16"
-                    Margin="0,0,0,6"
-                    FontSize="10"
-                    FontWeight="SemiBold"
-                    Foreground="#4B5563"
-                    Text="PROGRESO" />
+                <Grid Grid.Row="16" Margin="0,0,0,6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        FontSize="10"
+                        FontWeight="SemiBold"
+                        Foreground="#4B5563"
+                        Text="PROGRESO" />
+                    <Button
+                        x:Name="BtnCancel"
+                        Grid.Column="1"
+                        Height="22"
+                        Padding="10,0"
+                        Click="BtnCancel_Click"
+                        Cursor="Hand"
+                        FontFamily="Consolas"
+                        FontSize="10"
+                        Foreground="#FB923C"
+                        Style="{StaticResource BtnCancel}"
+                        ToolTip="Cancelar la operación en curso"
+                        Visibility="Collapsed">
+                        <TextBlock Text="⏹ cancelar" />
+                    </Button>
+                </Grid>
                 <Border
                     Grid.Row="17"
                     Height="8"

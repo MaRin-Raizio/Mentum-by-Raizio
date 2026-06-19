@@ -4,7 +4,7 @@
     <_LastSelectedProfileId>D:\repos\MentumLauncher\Properties\PublishProfiles\MentumPortable.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Update="VentanaAvanzadaxaml.xaml.cs">
+    <Compile Update="VentanaAvanzada.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="VentanaInfoSistema.xaml.cs">

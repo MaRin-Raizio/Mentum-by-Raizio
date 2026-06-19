@@ -10,12 +10,17 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32;
 
 namespace MentumLauncher
 {
     public partial class MainWindow : Window
     {
         private bool _isRunning = false;
+        private System.Threading.CancellationTokenSource? _cts = null;
+        private System.Diagnostics.Stopwatch _stopwatch = new System.Diagnostics.Stopwatch();
+        private System.Windows.Threading.DispatcherTimer _timerUI = new System.Windows.Threading.DispatcherTimer();
+        private DateTime _lastOperationTime = DateTime.MinValue;
 
         // ══ Flash en barra de tareas (WinAPI) ══
         [DllImport("user32.dll")]
@@ -70,6 +75,13 @@ namespace MentumLauncher
             InitializeComponent();
             this.Closing += MainWindow_Closing;
             //this.Loaded += async (s, e) => await UpdateChecker.CheckForUpdatesAsync(this);
+
+            _timerUI.Interval = TimeSpan.FromSeconds(1);
+            _timerUI.Tick += (s, e) =>
+            {
+                if (_stopwatch.IsRunning)
+                    TimerLabel.Text = $"  {_stopwatch.Elapsed:mm\\:ss}";
+            };
         }
 
         // ══ Barra de título personalizada ══
@@ -111,13 +123,22 @@ namespace MentumLauncher
             }
 
             _isRunning = true;
+            _cts = new System.Threading.CancellationTokenSource();
             SetButtonsEnabled(false);
+            BtnCancel.Visibility = System.Windows.Visibility.Visible;
 
+            if (!_stopwatch.IsRunning)
+            {
+                _stopwatch.Restart();
+                _timerUI.Start();
+            }
+
+            Process? process = null;
             try
             {
                 AppendLog($"▶ Ejecutando: {cmd}");
 
-                var process = new Process
+                process = new Process
                 {
                     StartInfo = new ProcessStartInfo
                     {
@@ -137,10 +158,26 @@ namespace MentumLauncher
                 string output = await process.StandardOutput.ReadToEndAsync();
                 string error = await process.StandardError.ReadToEndAsync();
 
-                await Task.Run(() => process.WaitForExit());
+                await Task.Run(() =>
+                {
+                    while (!process.HasExited)
+                    {
+                        if (_cts.Token.IsCancellationRequested)
+                        {
+                            try { process.Kill(entireProcessTree: true); } catch { }
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(200);
+                    }
+                });
+
+                if (_cts.Token.IsCancellationRequested)
+                {
+                    AppendLog("⏹ Operación cancelada por el usuario.");
+                    return false;
+                }
 
                 int exitCode = process.ExitCode;
-
                 if (exitCode == 0)
                 {
                     AppendLog($"✅ {description} ejecutado correctamente.");
@@ -164,7 +201,14 @@ namespace MentumLauncher
             finally
             {
                 _isRunning = false;
+                _cts?.Dispose();
+                _cts = null;
                 SetButtonsEnabled(true);
+                BtnCancel.Visibility = System.Windows.Visibility.Collapsed;
+                _stopwatch.Stop();
+                _timerUI.Stop();
+                _lastOperationTime = DateTime.Now;
+                TimerLabel.Text = $"  última: {_stopwatch.Elapsed:mm\\:ss}";
             }
         }
 
@@ -211,6 +255,7 @@ namespace MentumLauncher
             BtnFullMaintenance.IsEnabled = enabled;
             BtnSystemInfo.IsEnabled = enabled;
             BtnAvanzado.IsEnabled = enabled;
+            BtnDeepClean.IsEnabled = enabled;
         }
 
         private bool _closingMessageShown = false;
@@ -313,6 +358,11 @@ namespace MentumLauncher
 
         private async void BtnDiskCheck_Click(object sender, RoutedEventArgs e)
         {
+            var confirm = new VentanaMensaje("Confirmar CHKDSK", "CHKDSK puede tardar varios minutos y requerir un reinicio del sistema.\n\n¿Deseas continuar?", MensajeTipo.Advertencia, true);
+            confirm.Owner = this;
+            confirm.ShowDialog();
+            if (!confirm.Confirmado) return;
+
             ProgressBar.Value = 0;
             bool allOk = await RunCommand("chkdsk C: /F /R", "Comprobación de disco CHKDSK");
             AdvanceProgress(100);
@@ -333,8 +383,159 @@ namespace MentumLauncher
             NotifyCompletion(allOk);
         }
 
+
+        // ══ Botón: Limpieza profunda ══
+        private async void BtnDeepClean_Click(object sender, RoutedEventArgs e)
+        {
+            ProgressBar.Value = 0;
+            int step = 100 / 8;
+            bool allOk = true;
+
+            var confirmClean = new VentanaMensaje("Confirmar limpieza profunda", "Esta operación eliminará cachés, temporales, Prefetch y la papelera de reciclaje.\n\nNo se puede deshacer. ¿Deseas continuar?", MensajeTipo.Advertencia, true);
+            confirmClean.Owner = this;
+            confirmClean.ShowDialog();
+            if (!confirmClean.Confirmado) return;
+
+            AppendLog("🧹 Iniciando limpieza profunda del sistema...");
+
+            // 1. Configurar cleanmgr para limpiar todo via registro
+            AppendLog("▶ Configurando cleanmgr para limpieza completa...");
+            await Task.Run(() =>
+            {
+                try
+                {
+                    string[] categories = {
+                        "Active Setup Temp Folders", "BranchCache", "Content Indexer Cleaner",
+                        "D3D Shader Cache", "Delivery Optimization Files", "Device Driver Packages",
+                        "Diagnostic Data Viewer database files", "Downloaded Program Files",
+                        "Internet Cache Files", "Memory Dump Files", "Offline Pages Files",
+                        "Old ChkDsk Files", "Previous Installations", "Recycle Bin",
+                        "RetailDemo Offline Content", "Service Pack Cleanup",
+                        "Setup Log Files", "System error memory dump files",
+                        "System error minidump files", "Temporary Files",
+                        "Temporary Setup Files", "Temporary Sync Files",
+                        "Thumbnail Cache", "Update Cleanup", "Upgrade Discarded Files",
+                        "User file versions", "Windows Defender", "Windows Error Reporting Files",
+                        "Windows ESD installation files", "Windows Upgrade Log Files"
+                    };
+                    foreach (var cat in categories)
+                    {
+                        try
+                        {
+                            using var key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(
+                                $@"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches\{cat}");
+                            key?.SetValue("StateFlags0064", 2, Microsoft.Win32.RegistryValueKind.DWord);
+                        }
+                        catch { /* categoría no existe en este sistema, se omite */ }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() => AppendLog($"⚠️ Error configurando registro: {ex.Message}"));
+                }
+            });
+            AppendLog("✅ Cleanmgr configurado.");
+            AdvanceProgress(step);
+
+            // 2. Ejecutar cleanmgr con todas las categorías
+            allOk &= await RunCommand("cleanmgr /sagerun:64", "Limpieza completa con cleanmgr");
+            AdvanceProgress(step);
+
+            // 3. Detener Windows Update y limpiar caché
+            allOk &= await RunCommand("net stop wuauserv", "Detener servicio Windows Update");
+            AdvanceProgress(step);
+            await Task.Run(() =>
+            {
+                try
+                {
+                    string wuPath = @"C:\Windows\SoftwareDistribution\Download";
+                    if (System.IO.Directory.Exists(wuPath))
+                    {
+                        foreach (var f in System.IO.Directory.GetFiles(wuPath, "*", System.IO.SearchOption.AllDirectories))
+                            try { System.IO.File.Delete(f); } catch { }
+                        foreach (var d in System.IO.Directory.GetDirectories(wuPath))
+                            try { System.IO.Directory.Delete(d, true); } catch { }
+                    }
+                    Dispatcher.Invoke(() => AppendLog("✅ Caché de Windows Update eliminada."));
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() => AppendLog($"⚠️ Error limpiando Windows Update: {ex.Message}"));
+                }
+            });
+            await RunCommand("net start wuauserv", "Reiniciar servicio Windows Update");
+            AdvanceProgress(step);
+
+            // 4. Limpiar carpetas Temp
+            await Task.Run(() =>
+            {
+                string[] tempPaths = {
+                    System.IO.Path.GetTempPath(),
+                    @"C:\Windows\Temp"
+                };
+                int deleted = 0;
+                foreach (var path in tempPaths)
+                {
+                    if (!System.IO.Directory.Exists(path)) continue;
+                    foreach (var f in System.IO.Directory.GetFiles(path))
+                        try { System.IO.File.Delete(f); deleted++; } catch { }
+                    foreach (var d in System.IO.Directory.GetDirectories(path))
+                        try { System.IO.Directory.Delete(d, true); deleted++; } catch { }
+                }
+                Dispatcher.Invoke(() => AppendLog($"✅ Carpetas Temp limpiadas ({deleted} elementos eliminados)."));
+            });
+            AdvanceProgress(step);
+
+            // 5. Limpiar Prefetch
+            await Task.Run(() =>
+            {
+                string prefetch = @"C:\Windows\Prefetch";
+                int deleted = 0;
+                if (System.IO.Directory.Exists(prefetch))
+                {
+                    foreach (var f in System.IO.Directory.GetFiles(prefetch, "*.pf"))
+                        try { System.IO.File.Delete(f); deleted++; } catch { }
+                }
+                Dispatcher.Invoke(() => AppendLog($"✅ Prefetch limpiado ({deleted} archivos eliminados)."));
+            });
+            AdvanceProgress(step);
+
+            // 6. Vaciar papelera de reciclaje
+            allOk &= await RunCommand(
+                @"powershell -Command ""Clear-RecycleBin -Force -ErrorAction SilentlyContinue""",
+                "Vaciar papelera de reciclaje");
+            AdvanceProgress(step);
+
+            // 7. Limpiar caché de miniaturas
+            await Task.Run(() =>
+            {
+                string thumbPath = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    @"Microsoft\Windows\Explorer");
+                int deleted = 0;
+                if (System.IO.Directory.Exists(thumbPath))
+                {
+                    foreach (var f in System.IO.Directory.GetFiles(thumbPath, "thumbcache_*.db"))
+                        try { System.IO.File.Delete(f); deleted++; } catch { }
+                }
+                Dispatcher.Invoke(() => AppendLog($"✅ Caché de miniaturas limpiada ({deleted} archivos eliminados)."));
+            });
+            AdvanceProgress(step);
+
+            UpdateProgressColor(allOk);
+            AppendLog(allOk
+                ? "✅ Limpieza profunda completada."
+                : "⚠️ Limpieza profunda finalizada con algunos errores.");
+            NotifyCompletion(allOk);
+        }
+
         private async void BtnFullMaintenance_Click(object sender, RoutedEventArgs e)
         {
+            var confirmFull = new VentanaMensaje("Confirmar mantenimiento completo", "El mantenimiento completo ejecuta SFC, DISM, CHKDSK y desfragmentación en secuencia.\n\nPuede tardar más de 30 minutos. ¿Deseas continuar?", MensajeTipo.Advertencia, true);
+            confirmFull.Owner = this;
+            confirmFull.ShowDialog();
+            if (!confirmFull.Confirmado) return;
+
             ProgressBar.Value = 0;
             int step = 100 / 4;
             bool allOk = true;
@@ -369,6 +570,34 @@ namespace MentumLauncher
             VentanaAvanzada ventana = new VentanaAvanzada(this);
             ventana.Owner = this;
             ventana.ShowDialog();
+        }
+
+        private void BtnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            _cts?.Cancel();
+            AppendLog("⏹ Solicitud de cancelación enviada...");
+        }
+
+        private void BtnExportLog_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                string filename = $"mentum_log_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+                string path = System.IO.Path.Combine(desktop, filename);
+
+                var range = new System.Windows.Documents.TextRange(
+                    LogBox.Document.ContentStart,
+                    LogBox.Document.ContentEnd);
+                string logText = range.Text;
+
+                System.IO.File.WriteAllText(path, logText, Encoding.UTF8);
+                AppendLog($"💾 Log exportado a: {filename}");
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"❌ No se pudo exportar el log: {ex.Message}");
+            }
         }
 
         private void BtnCerrar_Click(object sender, RoutedEventArgs e)
