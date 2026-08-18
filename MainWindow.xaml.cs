@@ -256,6 +256,9 @@ namespace MentumLauncher
             BtnSystemInfo.IsEnabled = enabled;
             BtnAvanzado.IsEnabled = enabled;
             BtnDeepClean.IsEnabled = enabled;
+            BtnCleanHistory.IsEnabled = enabled;
+            BtnFixShortcuts.IsEnabled = enabled;
+            BtnStartupScan.IsEnabled = enabled;
         }
 
         private bool _closingMessageShown = false;
@@ -501,8 +504,8 @@ namespace MentumLauncher
             AdvanceProgress(step);
 
             // 6. Vaciar papelera de reciclaje
-            allOk &= await RunCommand(
-                @"powershell -Command ""Clear-RecycleBin -Force -ErrorAction SilentlyContinue""",
+            allOk &= await RunPowerShell(
+                "Clear-RecycleBin -Force -ErrorAction SilentlyContinue",
                 "Vaciar papelera de reciclaje");
             AdvanceProgress(step);
 
@@ -537,13 +540,15 @@ namespace MentumLauncher
             if (!confirmFull.Confirmado) return;
 
             ProgressBar.Value = 0;
-            int step = 100 / 4;
+            int fullStep = 100 / 6;
             bool allOk = true;
 
-            allOk &= await RunCommand("sfc /scannow", "Verificación de archivos del sistema"); AdvanceProgress(step);
-            allOk &= await RunCommand("DISM /Online /Cleanup-Image /RestoreHealth", "Restauración de imagen DISM"); AdvanceProgress(step);
-            allOk &= await RunCommand("chkdsk C: /F /R", "Comprobación de disco CHKDSK"); AdvanceProgress(step);
-            allOk &= await RunCommand("defrag C: /O", "Optimización de disco"); AdvanceProgress(step);
+            allOk &= await RunCommand("sfc /scannow", "Verificación de archivos del sistema"); AdvanceProgress(fullStep);
+            allOk &= await RunCommand("DISM /Online /Cleanup-Image /RestoreHealth", "Restauración de imagen DISM"); AdvanceProgress(fullStep);
+            allOk &= await RunCommand("chkdsk C: /F /R", "Comprobación de disco CHKDSK"); AdvanceProgress(fullStep);
+            allOk &= await RunCommand("defrag C: /O", "Optimización de disco"); AdvanceProgress(fullStep);
+            await CleanHistoryInternal(); AdvanceProgress(fullStep);
+            await FixShortcutsInternal(); AdvanceProgress(fullStep);
 
             UpdateProgressColor(allOk);
             AppendLog(allOk ? "✅ Mantenimiento completo finalizado." : "⚠️ Mantenimiento completo finalizado con errores.");
@@ -572,6 +577,111 @@ namespace MentumLauncher
             ventana.ShowDialog();
         }
 
+
+        // ══ Helper para ejecutar scripts de PowerShell directamente ══
+        private async Task<bool> RunPowerShell(string script, string description)
+        {
+            if (_isRunning)
+            {
+                AppendLog("⚠️ Ya hay un proceso en ejecución. Espera a que termine.");
+                return false;
+            }
+
+            _isRunning = true;
+            _cts = new System.Threading.CancellationTokenSource();
+            SetButtonsEnabled(false);
+            BtnCancel.Visibility = System.Windows.Visibility.Visible;
+
+            if (!_stopwatch.IsRunning)
+            {
+                _stopwatch.Restart();
+                _timerUI.Start();
+            }
+
+            Process? process = null;
+            try
+            {
+                AppendLog($"▶ Ejecutando (PS): {script}");
+
+                process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = "-NoProfile -NonInteractive -EncodedCommand " + Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(script)),
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        StandardOutputEncoding = Encoding.UTF8,
+                        StandardErrorEncoding = Encoding.UTF8
+                    }
+                };
+
+                process.Start();
+
+                string output = await process.StandardOutput.ReadToEndAsync();
+                string error = await process.StandardError.ReadToEndAsync();
+
+                await Task.Run(() =>
+                {
+                    while (!process.HasExited)
+                    {
+                        if (_cts.Token.IsCancellationRequested)
+                        {
+                            try { process.Kill(entireProcessTree: true); } catch { }
+                            break;
+                        }
+                        System.Threading.Thread.Sleep(200);
+                    }
+                });
+
+                if (_cts.Token.IsCancellationRequested)
+                {
+                    AppendLog("⏹ Operación cancelada por el usuario.");
+                    return false;
+                }
+
+                int exitCode = process.ExitCode;
+                if (exitCode == 0)
+                {
+                    AppendLog($"✅ {description} ejecutado correctamente.");
+                    return true;
+                }
+                else
+                {
+                    AppendLog($"❌ {description} devolvió un error (código {exitCode}).");
+                    if (!string.IsNullOrWhiteSpace(error))
+                        AppendLog("Detalles: " + error.Trim());
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"❌ Error inesperado ejecutando PowerShell: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                _isRunning = false;
+                _cts?.Dispose();
+                _cts = null;
+                SetButtonsEnabled(true);
+                BtnCancel.Visibility = System.Windows.Visibility.Collapsed;
+                _stopwatch.Stop();
+                _timerUI.Stop();
+                _lastOperationTime = DateTime.Now;
+                TimerLabel.Text = $"  última: {_stopwatch.Elapsed:mm\\:ss}";
+            }
+        }
+
+        private void BtnThemeToggle_Click(object sender, RoutedEventArgs e)
+        {
+            ThemeManager.Toggle();
+            BtnThemeToggle.Content = ThemeManager.IsDark ? "☀" : "🌙";
+            AppendLog(ThemeManager.IsDark ? "🌙 Tema oscuro activado." : "☀️ Tema claro activado.");
+        }
+
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
             _cts?.Cancel();
@@ -598,6 +708,150 @@ namespace MentumLauncher
             {
                 AppendLog($"❌ No se pudo exportar el log: {ex.Message}");
             }
+        }
+
+
+        // CleanHistory
+        private async void BtnCleanHistory_Click(object sender, RoutedEventArgs e)
+        {
+            ProgressBar.Value = 0;
+            AppendLog("🕵 Iniciando limpieza de historial...");
+            await CleanHistoryInternal();
+            ProgressBar.Value = 100;
+            UpdateProgressColor(true);
+            AppendLog("✅ Limpieza de historial completada.");
+            NotifyCompletion(true);
+        }
+
+        private async Task CleanHistoryInternal()
+        {
+            await Task.Run(() =>
+            {
+                int cleaned = 0;
+                string recent = Environment.GetFolderPath(Environment.SpecialFolder.Recent);
+                foreach (var f in System.IO.Directory.GetFiles(recent))
+                    try { System.IO.File.Delete(f); cleaned++; } catch { }
+                try
+                {
+                    using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                        @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\TypedPaths", true);
+                    if (key != null)
+                        foreach (var v in key.GetValueNames())
+                            try { key.DeleteValue(v); cleaned++; } catch { }
+                }
+                catch { }
+                try
+                {
+                    using var key2 = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                        @"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\WordWheelQuery", true);
+                    if (key2 != null)
+                        foreach (var v in key2.GetValueNames())
+                            try { key2.DeleteValue(v); cleaned++; } catch { }
+                }
+                catch { }
+                try { Dispatcher.Invoke(() => System.Windows.Clipboard.Clear()); } catch { }
+                string jumpLists = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    @"Microsoft\Windows\Recent\AutomaticDestinations");
+                if (System.IO.Directory.Exists(jumpLists))
+                    foreach (var f in System.IO.Directory.GetFiles(jumpLists))
+                        try { System.IO.File.Delete(f); cleaned++; } catch { }
+                Dispatcher.Invoke(() => AppendLog(
+                    $"✅ Historial limpiado ({cleaned} elementos eliminados)."));
+            });
+        }
+
+        // FixShortcuts
+        private async void BtnFixShortcuts_Click(object sender, RoutedEventArgs e)
+        {
+            ProgressBar.Value = 0;
+            AppendLog("🔗 Buscando accesos directos rotos...");
+            int removed = await FixShortcutsInternal();
+            ProgressBar.Value = 100;
+            UpdateProgressColor(true);
+            AppendLog(removed > 0
+                ? $"✅ Se eliminaron {removed} accesos directos rotos."
+                : "✅ No se encontraron accesos directos rotos.");
+            NotifyCompletion(true);
+        }
+
+        private async Task<int> FixShortcutsInternal()
+        {
+            return await Task.Run(() =>
+            {
+                int removed = 0;
+                string[] searchPaths = {
+                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
+                    Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
+                    Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
+                };
+                foreach (var folder in searchPaths)
+                {
+                    if (!System.IO.Directory.Exists(folder)) continue;
+                    foreach (var lnk in System.IO.Directory.GetFiles(
+                        folder, "*.lnk", System.IO.SearchOption.AllDirectories))
+                    {
+                        try
+                        {
+                            var shell = new IWshRuntimeLibrary.WshShell();
+                            var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(lnk);
+                            string target = shortcut.TargetPath;
+                            if (!string.IsNullOrEmpty(target) &&
+                                !System.IO.File.Exists(target) &&
+                                !System.IO.Directory.Exists(target))
+                            {
+                                System.IO.File.Delete(lnk);
+                                removed++;
+                                Dispatcher.Invoke(() => AppendLog(
+                                    $"  🗑 Eliminado: {System.IO.Path.GetFileName(lnk)}"));
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                return removed;
+            });
+        }
+
+        // StartupScan
+        private void BtnStartupScan_Click(object sender, RoutedEventArgs e)
+        {
+            AppendLog("🚀 Programas configurados al inicio de Windows:");
+            int found = 0;
+            string[] regPaths = {
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce",
+            };
+            foreach (var path in regPaths)
+            {
+                foreach (var hive in new[] {
+                    Microsoft.Win32.Registry.CurrentUser,
+                    Microsoft.Win32.Registry.LocalMachine })
+                {
+                    try
+                    {
+                        using var key = hive.OpenSubKey(path);
+                        if (key == null) continue;
+                        foreach (var name in key.GetValueNames())
+                        {
+                            AppendLog($"  ▶ {name}: {key.GetValue(name)}");
+                            found++;
+                        }
+                    }
+                    catch { }
+                }
+            }
+            string startupFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
+            if (System.IO.Directory.Exists(startupFolder))
+                foreach (var f in System.IO.Directory.GetFiles(startupFolder))
+                {
+                    AppendLog($"  📂 {System.IO.Path.GetFileName(f)}");
+                    found++;
+                }
+            AppendLog(found > 0
+                ? $"✅ {found} programas de inicio encontrados."
+                : "✅ No se encontraron programas de inicio adicionales.");
         }
 
         private void BtnCerrar_Click(object sender, RoutedEventArgs e)

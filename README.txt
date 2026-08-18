@@ -1,4 +1,4 @@
-﻿Mentum 2.2.0
+Mentum 2.3.0
 ------------
 
 El nombre "Mentum" surge de la raíz latina del sufijo "-mentum", que significa acción,
@@ -27,8 +27,12 @@ Funciones principales:
 - Limpieza de temporales: eliminación de archivos temporales con cleanmgr.
 - Limpieza profunda: limpieza completa del sistema incluyendo caché de Windows Update,
   carpetas Temp, Prefetch, papelera de reciclaje y caché de miniaturas.
-- Mantenimiento completo: secuencia automática de SFC, DISM, CHKDSK y optimización.
-- Información del sistema: datos en tiempo real de CPU, RAM, disco y hardware.
+- Seguridad y privacidad: limpieza de historial de actividad, reparación de accesos
+  directos rotos y visualización de programas configurados al inicio de Windows.
+- Mantenimiento completo: secuencia automática de SFC, DISM, CHKDSK, optimización,
+  limpieza de historial y reparación de accesos directos.
+- Información del sistema: datos en tiempo real de CPU, RAM, velocidad de red, disco
+  y hardware.
 - Opciones avanzadas: comandos directos para usuarios que buscan control total,
   incluyendo diagnóstico de red, energía, drivers y configuración de arranque.
 - Registro de acciones: log detallado con timestamps de todo lo ejecutado,
@@ -38,6 +42,8 @@ Funciones principales:
 - Confirmaciones de seguridad: aviso antes de ejecutar operaciones destructivas.
 - Notificaciones al completar: sonido, restauración de ventana y flash en la barra
   de tareas al terminar cualquier operación, incluso si Mentum está minimizado.
+- Tema claro y oscuro: alterna entre ambos con un solo clic, con la preferencia
+  guardada entre sesiones.
 - Branding integrado: acceso directo a GitHub y Ko-fi para comunidad y soporte.
 
 Requisitos del sistema:
@@ -46,17 +52,16 @@ Requisitos del sistema:
 - .NET 8.0 o superior
 - Permisos de administrador (requeridos para la mayoría de las operaciones)
 
-Novedades en 2.2.0:
+Novedades en 2.3.0:
 -------------------
-- Nuevo botón de limpieza profunda del sistema.
-- Botón para cancelar operaciones en curso.
-- Exportación del log al escritorio.
-- Indicador de tiempo transcurrido por operación.
-- Tooltips descriptivos en todos los botones de acción.
-- Confirmación antes de CHKDSK, limpieza profunda y mantenimiento completo.
-- Opciones avanzadas renovadas con comandos más útiles y únicos.
-- ScrollBar personalizado integrado al diseño oscuro de la app.
-- Ventana principal más alta para mayor visibilidad del log.
+- Nueva sección de Seguridad y Privacidad con limpieza de historial, reparación de
+  accesos directos rotos y visor de programas de inicio.
+- Nuevo tema claro, con toggle de sol/luna en la barra de título y preferencia guardada.
+- Nueva tarjeta de velocidad de red en tiempo real en Información del sistema.
+- Corregido un error que impedía vaciar la papelera de reciclaje correctamente
+  durante la limpieza profunda.
+- Corregidos varios problemas de distribución visual en la ventana principal y en
+  Información del sistema.
 
 Donaciones voluntarias:
 -----------------------

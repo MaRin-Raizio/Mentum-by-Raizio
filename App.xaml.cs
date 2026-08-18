@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -11,14 +10,13 @@ namespace MentumLauncher
         {
             base.OnStartup(e);
 
-            // 🔎 Obtiene automáticamente la versión bonita desde AssemblyInformationalVersion
-            string currentVersion = UpdateChecker.GetInformationalVersion();
+            // Cargar tema guardado antes de mostrar cualquier ventana
+            bool isDark = ThemeManager.LoadSavedTheme();
+            ThemeManager.Apply(isDark);
 
-            // Inicialización normal del launcher
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
 
-            // Llama al checker pasando la ventana como owner
             await UpdateChecker.CheckForUpdatesAsync(mainWindow);
         }
     }

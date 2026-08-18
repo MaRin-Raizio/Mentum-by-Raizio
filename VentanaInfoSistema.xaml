@@ -1,4 +1,4 @@
-﻿<Window
+<Window
     x:Class="MentumLauncher.VentanaInfoSistema"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -229,6 +229,29 @@
             </Setter>
         </Style>
 
+        <Style x:Key="ProgressPurple" TargetType="ProgressBar">
+            <Setter Property="Height" Value="10" />
+            <Setter Property="Minimum" Value="0" />
+            <Setter Property="Maximum" Value="100" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border Background="#0D0F18" BorderThickness="0" CornerRadius="5">
+                            <Border x:Name="PART_Track" CornerRadius="5">
+                                <Grid>
+                                    <Rectangle x:Name="PART_Indicator" HorizontalAlignment="Left" RadiusX="5" RadiusY="5">
+                                        <Rectangle.Fill><SolidColorBrush Color="#A78BFA"/></Rectangle.Fill>
+                                    </Rectangle>
+                                </Grid>
+                            </Border>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Window.Resources>
 
     <Border BorderBrush="#1E3A5F" BorderThickness="1">
@@ -314,16 +337,19 @@
             <Grid Grid.Row="2" Margin="22,14,22,14">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="10" />
+                    <RowDefinition Height="8" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="10" />
+                    <RowDefinition Height="8" />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="10" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="6" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="8" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="6" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="10" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="12" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
@@ -408,33 +434,64 @@
                     </Grid>
                 </Border>
 
-                <!--  Discos label  -->
-                <TextBlock
+                                <!--  Red  -->
+                <Border
                     Grid.Row="4"
+                    Padding="14,10"
+                    Background="#080A0F"
+                    BorderBrush="#4B1D82"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="6" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" FontSize="11" FontWeight="SemiBold"
+                                       Foreground="#4B5563" Text="VELOCIDAD DE RED" />
+                            <TextBlock x:Name="NetLabel" Grid.Column="1"
+                                       FontFamily="Consolas" FontSize="11"
+                                       Foreground="#C4B5FD"
+                                       Text="&#x2193; 0.0 MB/s  &#x2191; 0.0 MB/s" />
+                        </Grid>
+                        <ProgressBar x:Name="NetBar" Grid.Row="2"
+                                     Style="{StaticResource ProgressPurple}" />
+                    </Grid>
+                </Border>
+
+                <!--  Discos label  -->
+                        <TextBlock
+                    Grid.Row="6"
                     FontSize="10"
                     FontWeight="SemiBold"
                     Foreground="#4B5563"
                     Text="ESPACIO EN DISCOS" />
                 <ListBox
                     x:Name="DiskList"
-                    Grid.Row="6"
+                    Grid.Row="8"
                     Style="{StaticResource DarkListBox}" />
 
                 <!--  Detalles label  -->
-                <TextBlock
-                    Grid.Row="8"
+                         <TextBlock
+                    Grid.Row="10"
                     FontSize="10"
                     FontWeight="SemiBold"
                     Foreground="#4B5563"
                     Text="DETALLES DEL SISTEMA" />
                 <ListBox
                     x:Name="SystemDetailsList"
-                    Grid.Row="9"
+                    Grid.Row="12"
                     Style="{StaticResource DarkListBox}" />
 
                 <!--  Botón  -->
                 <Button
-                    Grid.Row="11"
+                    Grid.Row="14"
                     Width="240"
                     HorizontalAlignment="Right"
                     Click="BtnRegresar_Click"

@@ -14,7 +14,10 @@ namespace MentumLauncher
         private DispatcherTimer updateTimer;
         private PerformanceCounter cpuCounter;
         private PerformanceCounter ramCounter;
+        private PerformanceCounter netSentCounter;
+        private PerformanceCounter netRecvCounter;
         private float ramTotal;
+        private float netMaxMbps = 100f; // cap for progress bar
 
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -35,6 +38,23 @@ namespace MentumLauncher
             cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
             ramCounter = new PerformanceCounter("Memory", "Available MBytes");
             ramTotal = GetTotalMemoryInMBytes();
+
+            // Contadores de red - usar primera interfaz activa
+            try
+            {
+                var category = new PerformanceCounterCategory("Network Interface");
+                string[] instances = category.GetInstanceNames();
+                string netInstance = instances.Length > 0 ? instances[0] : "";
+                if (!string.IsNullOrEmpty(netInstance))
+                {
+                    netSentCounter = new PerformanceCounter("Network Interface", "Bytes Sent/sec", netInstance);
+                    netRecvCounter = new PerformanceCounter("Network Interface", "Bytes Received/sec", netInstance);
+                    // Primera lectura de calentamiento (siempre devuelve 0, se descarta)
+                    netSentCounter.NextValue();
+                    netRecvCounter.NextValue();
+                }
+            }
+            catch { }
 
             // Timer para actualizar cada segundo
             updateTimer = new DispatcherTimer();
@@ -74,6 +94,26 @@ namespace MentumLauncher
 
             RamBar.Value = ramUsagePercent;
             RamLabel.Text = $"{ramUsed:F0} MB usados / {ramTotal:F0} MB totales";
+
+            // Red
+            if (netRecvCounter != null && netSentCounter != null)
+            {
+                try
+                {
+                    float recvBytes = netRecvCounter.NextValue();
+                    float sentBytes = netSentCounter.NextValue();
+                    string recvStr = recvBytes >= 1024 * 1024
+                        ? $"{recvBytes / (1024f * 1024f):F1} MB/s"
+                        : $"{recvBytes / 1024f:F0} KB/s";
+                    string sentStr = sentBytes >= 1024 * 1024
+                        ? $"{sentBytes / (1024f * 1024f):F1} MB/s"
+                        : $"{sentBytes / 1024f:F0} KB/s";
+                    NetLabel.Text = $"↓ {recvStr}  ↑ {sentStr}";
+                    float totalMb = (recvBytes + sentBytes) / (1024f * 1024f);
+                    NetBar.Value = Math.Min((totalMb / netMaxMbps) * 100f, 100f);
+                }
+                catch { }
+            }
         }
 
         private float GetTotalMemoryInMBytes()
@@ -137,6 +177,11 @@ namespace MentumLauncher
         // Evento Closing para capturar cierre con la X
         private void VentanaInfoSistema_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
+            updateTimer?.Stop();
+            cpuCounter?.Dispose();
+            ramCounter?.Dispose();
+            netSentCounter?.Dispose();
+            netRecvCounter?.Dispose();
             if (this.Owner is MainWindow main)
             {
                 main.LogExternalAction("Volviendo al menú principal desde Información del sistema...");

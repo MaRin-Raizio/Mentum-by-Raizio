@@ -1,0 +1,36 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--  Fondos - verde muy tenue, casi neutro  -->
+    <SolidColorBrush x:Key="ThemeBgPrimary" Color="#F4F7F4" />
+    <SolidColorBrush x:Key="ThemeBgSurface" Color="#EBF0EB" />
+    <SolidColorBrush x:Key="ThemeBgCard" Color="#F8FAF8" />
+    <SolidColorBrush x:Key="ThemeBgTitleBar" Color="#DDE8DD" />
+    <SolidColorBrush x:Key="ThemeBorder" Color="#4D7C4D" />
+    <SolidColorBrush x:Key="ThemeBorderSubtle" Color="#B8CEB8" />
+    <SolidColorBrush x:Key="ThemeBorderOuter" Color="#7A9E7A" />
+
+    <!--  Texto  -->
+    <SolidColorBrush x:Key="ThemeTextPrimary" Color="#1A2E1A" />
+    <SolidColorBrush x:Key="ThemeTextMuted" Color="#5C7A5C" />
+    <SolidColorBrush x:Key="ThemeTextDim" Color="#8FAD8F" />
+    <SolidColorBrush x:Key="ThemeTextAccent" Color="#2D5A2D" />
+    <SolidColorBrush x:Key="ThemeTextSubtitle" Color="#5C7A5C" />
+
+    <!--  Log  -->
+    <SolidColorBrush x:Key="ThemeLogBg" Color="#F0F5F0" />
+    <SolidColorBrush x:Key="ThemeLogFg" Color="#1A4D1A" />
+
+    <!--  ScrollBar  -->
+    <SolidColorBrush x:Key="ThemeScrollBg" Color="#E5EDE5" />
+    <SolidColorBrush x:Key="ThemeScrollThumb" Color="#7A9E7A" />
+    <SolidColorBrush x:Key="ThemeScrollHover" Color="#4D7C4D" />
+
+    <!--  Separadores  -->
+    <SolidColorBrush x:Key="ThemeSeparator" Color="#4D7C4D" />
+
+    <!--  Badge versión  -->
+    <SolidColorBrush x:Key="ThemeBadgeBg" Color="#DDE8DD" />
+    <SolidColorBrush x:Key="ThemeBadgeFg" Color="#2D5A2D" />
+    <SolidColorBrush x:Key="ThemeBadgeBorder" Color="#4D7C4D" />
+
+</ResourceDictionary>
