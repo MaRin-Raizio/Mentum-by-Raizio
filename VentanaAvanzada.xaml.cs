@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,6 +11,20 @@ namespace MentumLauncher
     public partial class VentanaAvanzada : Window
     {
         private MainWindow _mainWindow;
+
+        // Palabras clave que indican que el equipo necesita reiniciarse
+        // para que un cambio se aplique por completo.
+        private static readonly string[] RebootKeywords = {
+            "restart", "reboot", "reinici", "se reiniciar",
+            "next time the system starts", "next time windows starts",
+            "programad", "scheduled", "schedule this volume"
+        };
+
+        private static bool ContainsRebootKeyword(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            return RebootKeywords.Any(k => text.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
 
         // Constructor que recibe la referencia al MainWindow
         public VentanaAvanzada(MainWindow mainWindow)
@@ -72,6 +87,9 @@ namespace MentumLauncher
 
                         if (!string.IsNullOrWhiteSpace(errores))
                             _mainWindow.AppendLog($"[ERROR] {comando}\n{errores}");
+
+                        if (ContainsRebootKeyword(salida) || ContainsRebootKeyword(errores))
+                            _mainWindow.AppendLog("🔄 Es posible que necesites reiniciar el equipo para que este cambio se aplique por completo.");
                     }
                 }
                 catch (Exception ex)

@@ -1,4 +1,4 @@
-Mentum 2.3.0
+Mentum 2.3.1
 ------------
 
 Mentum nació como un proyecto de claridad y resiliencia: un recordatorio de que incluso

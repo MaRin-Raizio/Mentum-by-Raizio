@@ -1,0 +1,14 @@
+Gracias por instalar Mentum v2.3.1 — Camino de la forja
+
+Cada versión de Mentum es un paso hacia un sistema más claro y confiable.
+Esta es una actualización de correcciones: pequeña en tamaño, pero grande en cuidado.
+Se resolvieron fallos reales que afectaban la reparación de accesos directos y la
+actividad de red en algunas instalaciones de Windows 10, y el administrador de
+programas de inicio ahora hace honor a su nombre: ya no solo informa, también actúa.
+
+Como en toda forja, lo que se calienta y golpea una y otra vez termina más firme
+que antes. Arreglar bien lo que ya existe es tan valioso como construir algo nuevo.
+Gracias por reportar lo que no funcionaba como debía — cada aviso tuyo hace que
+Mentum sea un poco más honesto con quienes confían en él.
+
+— MaRin Raizio

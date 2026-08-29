@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Media;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -68,6 +69,22 @@ namespace MentumLauncher
             // 3. Flash en barra de tareas (llama atención si el usuario cambió de ventana)
             this.Activate();
             FlashTaskbar();
+        }
+
+        // ══ Detección de "requiere reinicio" en la salida de un comando ══
+        // Windows suele avisar de esto en texto plano (inglés o español según
+        // el idioma del sistema), así que se busca por palabras clave en
+        // lugar de depender de un código de salida específico.
+        private static readonly string[] RebootKeywords = {
+            "restart", "reboot", "reinici", "se reiniciar",
+            "next time the system starts", "next time windows starts",
+            "programad", "scheduled", "schedule this volume"
+        };
+
+        private static bool ContainsRebootKeyword(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return false;
+            return RebootKeywords.Any(k => text.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
         public MainWindow()
@@ -146,6 +163,7 @@ namespace MentumLauncher
                         Arguments = "/C " + cmd,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
+                        RedirectStandardInput = true,
                         UseShellExecute = false,
                         CreateNoWindow = true,
                         StandardOutputEncoding = Encoding.UTF8,
@@ -154,6 +172,22 @@ namespace MentumLauncher
                 };
 
                 process.Start();
+
+                // Algunos comandos (como CHKDSK sobre el disco de arranque)
+                // preguntan por consola si se debe programar la comprobación
+                // para el próximo reinicio. Sin responder, el comando aborta
+                // silenciosamente. Se envía "Y" de forma preventiva; los
+                // comandos que no preguntan nada simplemente ignoran esta
+                // entrada sin efecto alguno.
+                try
+                {
+                    await process.StandardInput.WriteLineAsync("Y");
+                }
+                catch { /* el proceso no acepta entrada: se ignora */ }
+                finally
+                {
+                    try { process.StandardInput.Close(); } catch { }
+                }
 
                 string output = await process.StandardOutput.ReadToEndAsync();
                 string error = await process.StandardError.ReadToEndAsync();
@@ -175,6 +209,13 @@ namespace MentumLauncher
                 {
                     AppendLog("⏹ Operación cancelada por el usuario.");
                     return false;
+                }
+
+                // Aviso de reinicio pendiente, si el propio comando lo menciona
+                // en su salida (aplica sobre todo a SFC, DISM y CHKDSK).
+                if (ContainsRebootKeyword(output) || ContainsRebootKeyword(error))
+                {
+                    AppendLog("🔄 Es posible que necesites reiniciar el equipo para que este cambio se aplique por completo.");
                 }
 
                 int exitCode = process.ExitCode;
@@ -766,13 +807,22 @@ namespace MentumLauncher
         {
             ProgressBar.Value = 0;
             AppendLog("🔗 Buscando accesos directos rotos...");
-            int removed = await FixShortcutsInternal();
-            ProgressBar.Value = 100;
-            UpdateProgressColor(true);
-            AppendLog(removed > 0
-                ? $"✅ Se eliminaron {removed} accesos directos rotos."
-                : "✅ No se encontraron accesos directos rotos.");
-            NotifyCompletion(true);
+            try
+            {
+                int removed = await FixShortcutsInternal();
+                ProgressBar.Value = 100;
+                UpdateProgressColor(true);
+                AppendLog(removed > 0
+                    ? $"✅ Se eliminaron {removed} accesos directos rotos."
+                    : "✅ No se encontraron accesos directos rotos.");
+                NotifyCompletion(true);
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"❌ Error al reparar accesos directos: {ex.Message}");
+                UpdateProgressColor(false);
+                NotifyCompletion(false);
+            }
         }
 
         private async Task<int> FixShortcutsInternal()
@@ -786,72 +836,71 @@ namespace MentumLauncher
                     Environment.GetFolderPath(Environment.SpecialFolder.StartMenu),
                     Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu),
                 };
+
                 foreach (var folder in searchPaths)
                 {
-                    if (!System.IO.Directory.Exists(folder)) continue;
-                    foreach (var lnk in System.IO.Directory.GetFiles(
-                        folder, "*.lnk", System.IO.SearchOption.AllDirectories))
+                    // Cada carpeta se procesa en su propio try/catch: si una
+                    // subcarpeta protegida lanza excepción, no debe tumbar
+                    // el escaneo completo ni la aplicación.
+                    try
                     {
+                        if (!System.IO.Directory.Exists(folder)) continue;
+
+                        string[] lnkFiles;
                         try
                         {
-                            var shell = new IWshRuntimeLibrary.WshShell();
-                            var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(lnk);
-                            string target = shortcut.TargetPath;
-                            if (!string.IsNullOrEmpty(target) &&
-                                !System.IO.File.Exists(target) &&
-                                !System.IO.Directory.Exists(target))
+                            lnkFiles = System.IO.Directory.GetFiles(
+                                folder, "*.lnk", System.IO.SearchOption.AllDirectories);
+                        }
+                        catch (Exception exScan)
+                        {
+                            Dispatcher.Invoke(() => AppendLog(
+                                $"  ⚠️ No se pudo escanear '{folder}': {exScan.Message}"));
+                            continue;
+                        }
+
+                        foreach (var lnk in lnkFiles)
+                        {
+                            try
                             {
-                                System.IO.File.Delete(lnk);
-                                removed++;
-                                Dispatcher.Invoke(() => AppendLog(
-                                    $"  🗑 Eliminado: {System.IO.Path.GetFileName(lnk)}"));
+                                var shell = new IWshRuntimeLibrary.WshShell();
+                                var shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(lnk);
+                                string target = shortcut.TargetPath;
+                                if (!string.IsNullOrEmpty(target) &&
+                                    !System.IO.File.Exists(target) &&
+                                    !System.IO.Directory.Exists(target))
+                                {
+                                    System.IO.File.Delete(lnk);
+                                    removed++;
+                                    Dispatcher.Invoke(() => AppendLog(
+                                        $"  🗑 Eliminado: {System.IO.Path.GetFileName(lnk)}"));
+                                }
+                            }
+                            catch
+                            {
+                                // Un acceso directo individual que no se puede leer
+                                // (permisos, formato dañado, etc.) se omite sin
+                                // interrumpir el resto del escaneo.
                             }
                         }
-                        catch { }
+                    }
+                    catch (Exception exFolder)
+                    {
+                        Dispatcher.Invoke(() => AppendLog(
+                            $"  ⚠️ Error procesando '{folder}': {exFolder.Message}"));
                     }
                 }
                 return removed;
             });
         }
 
-        // StartupScan
+        // StartupScan - abre la ventana de gestión de programas de inicio
         private void BtnStartupScan_Click(object sender, RoutedEventArgs e)
         {
-            AppendLog("🚀 Programas configurados al inicio de Windows:");
-            int found = 0;
-            string[] regPaths = {
-                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
-                @"SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce",
-            };
-            foreach (var path in regPaths)
-            {
-                foreach (var hive in new[] {
-                    Microsoft.Win32.Registry.CurrentUser,
-                    Microsoft.Win32.Registry.LocalMachine })
-                {
-                    try
-                    {
-                        using var key = hive.OpenSubKey(path);
-                        if (key == null) continue;
-                        foreach (var name in key.GetValueNames())
-                        {
-                            AppendLog($"  ▶ {name}: {key.GetValue(name)}");
-                            found++;
-                        }
-                    }
-                    catch { }
-                }
-            }
-            string startupFolder = Environment.GetFolderPath(Environment.SpecialFolder.Startup);
-            if (System.IO.Directory.Exists(startupFolder))
-                foreach (var f in System.IO.Directory.GetFiles(startupFolder))
-                {
-                    AppendLog($"  📂 {System.IO.Path.GetFileName(f)}");
-                    found++;
-                }
-            AppendLog(found > 0
-                ? $"✅ {found} programas de inicio encontrados."
-                : "✅ No se encontraron programas de inicio adicionales.");
+            AppendLog("🚀 Abriendo administrador de programas de inicio...");
+            var ventana = new VentanaStartup(this);
+            ventana.Owner = this;
+            ventana.ShowDialog();
         }
 
         private void BtnCerrar_Click(object sender, RoutedEventArgs e)

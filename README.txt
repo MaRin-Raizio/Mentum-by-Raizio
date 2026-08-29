@@ -1,4 +1,4 @@
-Mentum 2.3.0
+Mentum 2.3.1
 ------------
 
 El nombre "Mentum" surge de la raíz latina del sufijo "-mentum", que significa acción,
@@ -28,11 +28,12 @@ Funciones principales:
 - Limpieza profunda: limpieza completa del sistema incluyendo caché de Windows Update,
   carpetas Temp, Prefetch, papelera de reciclaje y caché de miniaturas.
 - Seguridad y privacidad: limpieza de historial de actividad, reparación de accesos
-  directos rotos y visualización de programas configurados al inicio de Windows.
+  directos rotos y administrador de programas de inicio con opción de habilitar o
+  deshabilitar cada uno de forma reversible.
 - Mantenimiento completo: secuencia automática de SFC, DISM, CHKDSK, optimización,
   limpieza de historial y reparación de accesos directos.
-- Información del sistema: datos en tiempo real de CPU, RAM, velocidad de red, disco
-  y hardware.
+- Información del sistema: datos en tiempo real de CPU, RAM, actividad de red, disco
+  y hardware, con prueba de velocidad de descarga bajo demanda.
 - Opciones avanzadas: comandos directos para usuarios que buscan control total,
   incluyendo diagnóstico de red, energía, drivers y configuración de arranque.
 - Registro de acciones: log detallado con timestamps de todo lo ejecutado,
@@ -62,6 +63,25 @@ Novedades en 2.3.0:
   durante la limpieza profunda.
 - Corregidos varios problemas de distribución visual en la ventana principal y en
   Información del sistema.
+
+Novedades en 2.3.1 (parche de correcciones):
+---------------------------------------------
+- Corregido un error que hacía crashear Mentum al reparar accesos directos rotos
+  en carpetas del sistema con permisos restringidos.
+- Corregida la actividad de red, que no funcionaba correctamente en algunas
+  instalaciones de Windows 10.
+- El administrador de programas de inicio ahora permite habilitar y deshabilitar
+  cada entrada de forma reversible, en lugar de solo mostrarlas en el registro.
+- CHKDSK ahora programa correctamente la comprobación en el próximo reinicio en
+  lugar de fallar en silencio por falta de confirmación.
+- Nuevo aviso en el registro de acciones cuando un cambio requiere reiniciar el
+  equipo para aplicarse por completo.
+- La prueba de velocidad ahora verifica la conexión a internet en unos segundos
+  antes de iniciar, evitando esperas largas innecesarias cuando no hay conexión.
+- Renombrada la tarjeta "Velocidad de red" a "Actividad de red" para no
+  confundirla con el nuevo botón de prueba de velocidad bajo demanda.
+- Tema claro ajustado a un tono crema más suave, menos intenso que la versión
+  anterior.
 
 Donaciones voluntarias:
 -----------------------
