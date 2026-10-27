@@ -1,4 +1,4 @@
-Mentum 2.3.1
+Mentum 2.4.0
 ------------
 
 El nombre "Mentum" surge de la raíz latina del sufijo "-mentum", que significa acción,
@@ -28,14 +28,19 @@ Funciones principales:
 - Limpieza profunda: limpieza completa del sistema incluyendo caché de Windows Update,
   carpetas Temp, Prefetch, papelera de reciclaje y caché de miniaturas.
 - Seguridad y privacidad: limpieza de historial de actividad, reparación de accesos
-  directos rotos y administrador de programas de inicio con opción de habilitar o
-  deshabilitar cada uno de forma reversible.
+  directos rotos, administrador de programas de inicio con opción de habilitar o
+  deshabilitar cada uno de forma reversible, y verificación del estado de Windows
+  Defender y del Firewall, con reconocimiento de antivirus de terceros.
+- Reporte de batería: genera con un clic el informe detallado de Windows y lo abre en
+  tu navegador (para equipos portátiles).
 - Mantenimiento completo: secuencia automática de SFC, DISM, CHKDSK, optimización,
   limpieza de historial y reparación de accesos directos.
 - Información del sistema: datos en tiempo real de CPU, RAM, actividad de red, disco
   y hardware, con prueba de velocidad de descarga bajo demanda.
-- Opciones avanzadas: comandos directos para usuarios que buscan control total,
-  incluyendo diagnóstico de red, energía, drivers y configuración de arranque.
+- Opciones avanzadas: más de 60 comandos individuales organizados por categoría
+  (reparación, disco, limpieza, red, sistema y arranque, energía y hardware), con
+  buscador en vivo, para quien ya sabe lo que necesita. Las herramientas que abren su
+  propia ventana no bloquean Mentum.
 - Registro de acciones: log detallado con timestamps de todo lo ejecutado,
   exportable a .txt con un clic.
 - Indicador de tiempo: muestra el tiempo transcurrido durante cada operación.
@@ -45,6 +50,8 @@ Funciones principales:
   de tareas al terminar cualquier operación, incluso si Mentum está minimizado.
 - Tema claro y oscuro: alterna entre ambos con un solo clic, con la preferencia
   guardada entre sesiones.
+- Historial de versiones: consulta qué cambió en cada entrega desde la propia
+  aplicación, con el botón de la barra de título.
 - Branding integrado: acceso directo a GitHub y Ko-fi para comunidad y soporte.
 
 Requisitos del sistema:
@@ -82,6 +89,28 @@ Novedades en 2.3.1 (parche de correcciones):
   confundirla con el nuevo botón de prueba de velocidad bajo demanda.
 - Tema claro ajustado a un tono crema más suave, menos intenso que la versión
   anterior.
+
+Novedades en 2.4.0 — El Yunque:
+-------------------------------
+- Herramientas avanzadas renovada por completo: más de 60 comandos individuales
+  organizados por categoría, cada uno con una breve descripción de lo que hace.
+- Nuevo buscador en vivo en Herramientas avanzadas: filtra por comando o por
+  descripción y oculta las categorías sin resultados.
+- Los comandos ya no congelan Mentum mientras se ejecutan. Las herramientas que abren
+  su propia ventana (winver, msinfo32, dxdiag, eventvwr, entre otras) se lanzan sin
+  esperar a que las cierres.
+- Nueva advertencia de modo avanzado, que se muestra una sola vez por sesión al abrir
+  Herramientas avanzadas por primera vez.
+- Nuevo botón Verificar Defender y Firewall: muestra el estado del antivirus, la
+  protección en tiempo real y los tres perfiles del Firewall de Windows.
+- La verificación reconoce cuándo hay un antivirus de terceros activo (en ese caso
+  Defender está en pausa a propósito) y distingue los restos de uno ya desinstalado,
+  para no mostrar falsas alarmas.
+- Nuevo botón Reporte de batería: genera el informe detallado de Windows y lo abre en
+  tu navegador. Si el equipo no tiene batería, lo avisa en el registro de acciones.
+- Nuevo historial de versiones dentro de la aplicación, accesible desde la barra de
+  título.
+- La sección de Seguridad y Privacidad pasa a tener dos filas de botones.
 
 Donaciones voluntarias:
 -----------------------

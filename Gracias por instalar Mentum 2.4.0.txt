@@ -1,0 +1,17 @@
+Gracias por instalar Mentum v2.4.0 — El Yunque
+
+Cada versión de Mentum es un paso hacia un sistema más claro y confiable.
+Después del camino de la forja llega el yunque: la base firme sobre la que se trabaja
+todo lo demás. Esta versión renueva las Herramientas avanzadas, con más de 60 comandos
+ordenados por categoría y un buscador, y suma la verificación de Defender y del
+Firewall, el reporte de batería y un historial de versiones dentro de la propia
+aplicación.
+
+Un yunque no hace ruido ni busca lucirse: sostiene el golpe para que lo que se forja
+tome forma. Eso quiero que sea Mentum para ti, una base sólida tanto para quien ya sabe
+lo que necesita como para quien apenas está aprendiendo.
+
+Tu participación mantiene vivo este proyecto abierto.
+Gracias por usarlo, por probarlo y por notificar cuando algo no funciona como debería.
+
+— MaRin Raizio

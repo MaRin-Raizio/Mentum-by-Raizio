@@ -1,11 +1,12 @@
-﻿<Window
+<Window
     x:Class="MentumLauncher.VentanaAvanzada"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:MentumLauncher"
     Title="Opciones avanzadas"
-    Width="700"
-    Height="500"
-    MinHeight="480"
+    Width="760"
+    Height="640"
+    MinHeight="560"
     AllowsTransparency="False"
     Background="#0F1117"
     FontFamily="Segoe UI"
@@ -13,6 +14,8 @@
     WindowStyle="None">
 
     <Window.Resources>
+
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
 
         <Style x:Key="BaseBtn" TargetType="Button">
             <Setter Property="Height" Value="40" />
@@ -38,6 +41,9 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="bd" Property="Opacity" Value="0.60" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.35" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -111,6 +117,32 @@
             </Setter>
         </Style>
 
+        <!--  Buscador  -->
+        <Style x:Key="SearchBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#080A0F" />
+            <Setter Property="Foreground" Value="#D1D5DB" />
+            <Setter Property="CaretBrush" Value="#A78BFA" />
+            <Setter Property="BorderBrush" Value="#1E2130" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="7">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  Lista con soporte de encabezados de sección  -->
         <Style x:Key="DarkListBox" TargetType="ListBox">
             <Setter Property="Background" Value="#080A0F" />
             <Setter Property="BorderBrush" Value="#1E2130" />
@@ -135,12 +167,35 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Setter Property="ItemTemplate">
+                <Setter.Value>
+                    <DataTemplate DataType="{x:Type local:CommandEntry}">
+                        <Grid>
+                            <!--  Encabezado de sección  -->
+                            <TextBlock
+                                Margin="4,10,4,4"
+                                FontSize="10"
+                                FontWeight="SemiBold"
+                                Foreground="#4B5563"
+                                Text="{Binding Category}"
+                                Visibility="{Binding IsHeader, Converter={StaticResource BoolToVis}}" />
+                            <!--  Fila de comando  -->
+                            <StackPanel Visibility="{Binding IsCommand, Converter={StaticResource BoolToVis}}">
+                                <TextBlock FontWeight="SemiBold" Text="{Binding Command}" />
+                                <TextBlock
+                                    Margin="0,2,0,0"
+                                    FontSize="10"
+                                    Foreground="#6B7280"
+                                    Text="{Binding Description}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </Setter.Value>
+            </Setter>
             <Setter Property="ItemContainerStyle">
                 <Setter.Value>
                     <Style TargetType="ListBoxItem">
                         <Setter Property="Padding" Value="10,7" />
-                        <Setter Property="FontFamily" Value="Consolas" />
-                        <Setter Property="FontSize" Value="12" />
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="ListBoxItem">
@@ -150,24 +205,25 @@
                                         Padding="{TemplateBinding Padding}"
                                         Background="Transparent"
                                         CornerRadius="5">
-                                        <TextBlock
-                                            x:Name="txt"
-                                            Foreground="#9CA3AF"
-                                            Text="{TemplateBinding Content}" />
+                                        <ContentPresenter />
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="itemBd" Property="Background" Value="#1C1F2B" />
-                                            <Setter TargetName="txt" Property="Foreground" Value="#D1D5DB" />
                                         </Trigger>
                                         <Trigger Property="IsSelected" Value="True">
                                             <Setter TargetName="itemBd" Property="Background" Value="#1E1530" />
-                                            <Setter TargetName="txt" Property="Foreground" Value="#C4B5FD" />
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsHeader}" Value="True">
+                                <Setter Property="IsHitTestVisible" Value="False" />
+                                <Setter Property="Focusable" Value="False" />
+                            </DataTrigger>
+                        </Style.Triggers>
                     </Style>
                 </Setter.Value>
             </Setter>
@@ -183,7 +239,7 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!--  ══ BARRA DE TÍTULO (opción 2: fondo morado oscuro) ══  -->
+            <!--  ══ BARRA DE TÍTULO ══  -->
             <Grid
                 Grid.Row="0"
                 Background="#1A0A2E"
@@ -226,7 +282,7 @@
                             FontSize="10"
                             Foreground="#4B5563"
                             LineHeight="14"
-                            Text="modo avanzado · v2.2.0" />
+                            Text="modo avanzado · v2.4.0" />
                     </StackPanel>
                 </StackPanel>
 
@@ -259,9 +315,9 @@
             <Grid Grid.Row="2" Margin="22,16,22,16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="8" />
-                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="6" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="12" />
                     <RowDefinition Height="Auto" />
@@ -279,43 +335,37 @@
                         Margin="0,4,0,0"
                         FontSize="11"
                         Foreground="#4B5563"
-                        Text="Selecciona un comando y ejecútalo directamente sobre el sistema." />
+                        Text="Busca, selecciona y ejecuta cualquier comando directamente sobre el sistema." />
                 </StackPanel>
 
-                <TextBlock
-                    Grid.Row="2"
-                    FontSize="10"
-                    FontWeight="SemiBold"
-                    Foreground="#4B5563"
-                    Text="COMANDOS DISPONIBLES" />
+                <Grid Grid.Row="2">
+                    <TextBox
+                        x:Name="TxtBuscar"
+                        Style="{StaticResource SearchBox}"
+                        TextChanged="TxtBuscar_TextChanged" />
+                    <TextBlock
+                        x:Name="TxtBuscarPlaceholder"
+                        Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        FontFamily="Consolas"
+                        FontSize="12"
+                        Foreground="#4B5563"
+                        IsHitTestVisible="False"
+                        Text="🔍  Buscar comando..." />
+                </Grid>
 
                 <ListBox
-                    Name="ListaComandos"
+                    x:Name="ListaComandos"
                     Grid.Row="4"
-                    Style="{StaticResource DarkListBox}">
-                    <!--  Disco y optimización  -->
-                    <ListBoxItem Content="defrag C: /O" />
-                    <ListBoxItem Content="fsutil behavior query DisableDeleteNotify" />
-                    <!--  Energía y batería  -->
-                    <ListBoxItem Content="powercfg /energy" />
-                    <ListBoxItem Content="powercfg /batteryreport" />
-                    <!--  Red y seguridad  -->
-                    <ListBoxItem Content="netstat -ano" />
-                    <ListBoxItem Content="arp -a" />
-                    <!--  Sistema y arranque  -->
-                    <ListBoxItem Content="bcdedit" />
-                    <ListBoxItem Content="driverquery" />
-                    <ListBoxItem Content="schtasks /query /fo LIST" />
-                    <!--  Información  -->
-                    <ListBoxItem Content="winver" />
-                    <ListBoxItem Content="msinfo32" />
-                    <ListBoxItem Content="wmic cpu get name,numberofcores,maxclockspeed" />
-                </ListBox>
+                    SelectionChanged="ListaComandos_SelectionChanged"
+                    Style="{StaticResource DarkListBox}" />
 
                 <Button
+                    x:Name="BtnEjecutar"
                     Grid.Row="6"
                     Click="BtnEjecutar_Click"
                     Content="▶  Ejecutar comando seleccionado"
+                    IsEnabled="False"
                     Style="{StaticResource BtnGreen}" />
                 <Button
                     Grid.Row="8"

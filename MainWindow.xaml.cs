@@ -300,6 +300,8 @@ namespace MentumLauncher
             BtnCleanHistory.IsEnabled = enabled;
             BtnFixShortcuts.IsEnabled = enabled;
             BtnStartupScan.IsEnabled = enabled;
+            BtnCheckDefender.IsEnabled = enabled;
+            BtnBatteryReport.IsEnabled = enabled;
         }
 
         private bool _closingMessageShown = false;
@@ -642,7 +644,7 @@ namespace MentumLauncher
             Process? process = null;
             try
             {
-                AppendLog($"▶ Ejecutando (PS): {script}");
+                AppendLog($"▶ {description}...");
 
                 process = new Process
                 {
@@ -899,6 +901,251 @@ namespace MentumLauncher
         {
             AppendLog("🚀 Abriendo administrador de programas de inicio...");
             var ventana = new VentanaStartup(this);
+            ventana.Owner = this;
+            ventana.ShowDialog();
+        }
+
+        // ══ Verificar Windows Defender y Firewall ══
+        // No usa RunPowerShell porque ese método no muestra la salida del
+        // script cuando termina con éxito (solo dice "completado"), y aquí
+        // el resultado del diagnóstico es justo lo que el usuario necesita ver.
+        private async void BtnCheckDefender_Click(object sender, RoutedEventArgs e)
+        {
+            AppendLog("🛡 Verificando Windows Defender y Firewall...");
+            BtnCheckDefender.IsEnabled = false;
+
+            // El script imprime líneas clave=valor sencillas de parsear,
+            // en vez de texto formateado que sería frágil de interpretar.
+            // También consulta SecurityCenter2 para detectar si hay un
+            // antivirus de terceros activo: cuando lo hay, Windows apaga
+            // Defender a propósito (no es un problema real).
+            string script =
+                "try { " +
+                "  $mp = Get-MpComputerStatus; " +
+                "  Write-Output ('AV_REALTIME=' + $mp.RealTimeProtectionEnabled); " +
+                "  Write-Output ('AV_ENABLED=' + $mp.AntivirusEnabled); " +
+                "} catch { " +
+                "  Write-Output 'AV_REALTIME=DESCONOCIDO'; " +
+                "  Write-Output 'AV_ENABLED=DESCONOCIDO'; " +
+                "} " +
+                "try { " +
+                "  Get-CimInstance -Namespace 'root/SecurityCenter2' -ClassName AntiVirusProduct -ErrorAction Stop | " +
+                "  ForEach-Object { Write-Output ('AV_PRODUCT=' + $_.displayName + '|' + $_.productState) } " +
+                "} catch { } " +
+                "Get-NetFirewallProfile | ForEach-Object { Write-Output ('FW_' + $_.Name.ToUpper() + '=' + $_.Enabled) }";
+
+            try
+            {
+                (bool ok, string output, string error) = await RunPowerShellCaptured(script);
+
+                if (!ok)
+                {
+                    AppendLog("❌ No se pudo completar la verificación.");
+                    if (!string.IsNullOrWhiteSpace(error))
+                        AppendLog("Detalles: " + error.Trim());
+                    return;
+                }
+
+                var values = new System.Collections.Generic.Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var avProducts = new System.Collections.Generic.List<(string name, bool active)>();
+                foreach (var line in output.Split('\n'))
+                {
+                    var parts = line.Trim().Split('=', 2);
+                    if (parts.Length != 2) continue;
+
+                    string key = parts[0].Trim();
+                    string val = parts[1].Trim();
+
+                    // Puede haber varios antivirus registrados (p. ej. Defender
+                    // + uno de terceros), así que se acumulan en una lista en
+                    // lugar de sobrescribirse en el diccionario.
+                    if (key.Equals("AV_PRODUCT", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Formato: nombre|productState. El bit 0x1000 de
+                        // productState indica si el producto está activo
+                        // (convención muy usada, aunque Microsoft no la
+                        // documenta oficialmente).
+                        int sep = val.LastIndexOf('|');
+                        string name = sep >= 0 ? val.Substring(0, sep).Trim() : val;
+                        bool active = true; // si no se puede leer el estado, se asume activo
+                        if (sep >= 0 && int.TryParse(val.Substring(sep + 1).Trim(), out int state))
+                            active = (state & 0x1000) != 0;
+                        if (!string.IsNullOrWhiteSpace(name)) avProducts.Add((name, active));
+                    }
+                    else
+                    {
+                        values[key] = val;
+                    }
+                }
+
+                // Antivirus de terceros = cualquier producto registrado que no sea Defender.
+                // Se excluyen solo los nombres de Microsoft. Buscar únicamente
+                // "Defender" no sirve: "Bitdefender" también lo contiene y
+                // quedaba descartado por error.
+                var nonDefender = avProducts
+                    .Where(p => p.name.IndexOf("Windows Defender", StringComparison.OrdinalIgnoreCase) < 0
+                             && p.name.IndexOf("Microsoft Defender", StringComparison.OrdinalIgnoreCase) < 0)
+                    .ToList();
+
+                // Activos: los que realmente están protegiendo el equipo ahora.
+                var thirdParty = nonDefender
+                    .Where(p => p.active)
+                    .Select(p => p.name)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                // Inactivos: siguen registrados en Windows, pero apagados
+                // (típicamente restos de un antivirus ya desinstalado).
+                var thirdPartyStale = nonDefender
+                    .Where(p => !p.active)
+                    .Select(p => p.name)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Where(n => !thirdParty.Contains(n, StringComparer.OrdinalIgnoreCase))
+                    .ToList();
+
+                bool defenderOff =
+                    values.TryGetValue("AV_ENABLED", out var avEn) &&
+                    avEn.Equals("False", StringComparison.OrdinalIgnoreCase);
+
+                string Icon(string key) =>
+                    values.TryGetValue(key, out var v) && v.Equals("True", StringComparison.OrdinalIgnoreCase) ? "✅" :
+                    values.TryGetValue(key, out var v2) && v2.Equals("False", StringComparison.OrdinalIgnoreCase) ? "⚠️" : "❔";
+
+                string Estado(string key) =>
+                    values.TryGetValue(key, out var v)
+                        ? (v.Equals("True", StringComparison.OrdinalIgnoreCase) ? "activado"
+                           : v.Equals("False", StringComparison.OrdinalIgnoreCase) ? "desactivado"
+                           : "no disponible")
+                        : "no disponible";
+
+                AppendLog("🛡 Windows Defender");
+                if (defenderOff && thirdParty.Count > 0)
+                {
+                    // Windows apaga Defender a propósito cuando hay otro
+                    // antivirus activo, así que no es una alerta real.
+                    AppendLog($"   ℹ️ Defender está en pausa porque tienes otro antivirus activo: {string.Join(", ", thirdParty)}");
+                    AppendLog("   (esto es normal: Windows lo desactiva para evitar conflictos)");
+                }
+                else
+                {
+                    AppendLog($"   {Icon("AV_ENABLED")} Antivirus: {Estado("AV_ENABLED")}");
+                    AppendLog($"   {Icon("AV_REALTIME")} Protección en tiempo real: {Estado("AV_REALTIME")}");
+                    if (thirdParty.Count > 0)
+                        AppendLog($"   ℹ️ Antivirus adicional detectado: {string.Join(", ", thirdParty)}");
+                }
+
+                if (thirdPartyStale.Count > 0)
+                    AppendLog($"   ℹ️ Registrado pero inactivo: {string.Join(", ", thirdPartyStale)} (posible resto de un antivirus ya desinstalado)");
+
+                AppendLog("🔥 Firewall de Windows");
+                AppendLog($"   {Icon("FW_DOMAIN")} Perfil de dominio: {Estado("FW_DOMAIN")}");
+                AppendLog($"   {Icon("FW_PRIVATE")} Perfil privado: {Estado("FW_PRIVATE")}");
+                AppendLog($"   {Icon("FW_PUBLIC")} Perfil público: {Estado("FW_PUBLIC")}");
+
+                // Solo cuenta como "protección desactivada" lo que realmente
+                // importa: el Firewall siempre, y Defender solo si no hay
+                // otro antivirus cubriendo esa función.
+                bool firewallOff = new[] { "FW_DOMAIN", "FW_PRIVATE", "FW_PUBLIC" }
+                    .Any(k => values.TryGetValue(k, out var fv) &&
+                              fv.Equals("False", StringComparison.OrdinalIgnoreCase));
+                bool avUncovered = defenderOff && thirdParty.Count == 0;
+
+                if (firewallOff || avUncovered)
+                    AppendLog("⚠️ Hay al menos una protección desactivada. Revisa Configuración de Windows > Privacidad y seguridad.");
+                else
+                    AppendLog("✅ Todo en orden: tu equipo tiene protección antivirus y firewall activos.");
+            }
+            finally
+            {
+                BtnCheckDefender.IsEnabled = true;
+            }
+        }
+
+        // Variante de RunPowerShell que además devuelve la salida capturada,
+        // para casos (como este) donde el resultado del script es lo que
+        // el usuario necesita ver, no solo si terminó sin errores.
+        private async Task<(bool success, string output, string error)> RunPowerShellCaptured(string script)
+        {
+            Process? process = null;
+            string tempScript = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "mentum_ps_check.ps1");
+            try
+            {
+                System.IO.File.WriteAllText(tempScript, script, System.Text.Encoding.UTF8);
+
+                process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"" + tempScript + "\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        StandardOutputEncoding = Encoding.UTF8,
+                        StandardErrorEncoding = Encoding.UTF8
+                    }
+                };
+
+                process.Start();
+                string output = await process.StandardOutput.ReadToEndAsync();
+                string error = await process.StandardError.ReadToEndAsync();
+                await Task.Run(() => process.WaitForExit());
+
+                return (process.ExitCode == 0, output, error);
+            }
+            catch (Exception ex)
+            {
+                return (false, "", ex.Message);
+            }
+            finally
+            {
+                try { System.IO.File.Delete(tempScript); } catch { }
+            }
+        }
+
+        // ══ Generar y abrir reporte de batería ══
+        private async void BtnBatteryReport_Click(object sender, RoutedEventArgs e)
+        {
+            AppendLog("🔋 Generando reporte de batería...");
+
+            try
+            {
+                string reportPath = System.IO.Path.Combine(
+                    System.IO.Path.GetTempPath(), "mentum_battery_report.html");
+
+                bool ok = await RunCommand(
+                    $"powercfg /batteryreport /output \"{reportPath}\"",
+                    "Generación del reporte de batería");
+
+                if (ok && System.IO.File.Exists(reportPath))
+                {
+                    // Se abre en el navegador del usuario: el reporte de
+                    // powercfg usa gráficos con JavaScript moderno que el
+                    // control WebBrowser integrado de WPF (basado en IE)
+                    // no renderiza de forma confiable.
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = reportPath,
+                        UseShellExecute = true
+                    });
+                    AppendLog("✅ Reporte de batería abierto en tu navegador.");
+                }
+                else
+                {
+                    AppendLog("⚠️ No se pudo generar el reporte. Es posible que este equipo no tenga batería (equipos de escritorio).");
+                }
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"❌ Error al generar el reporte de batería: {ex.Message}");
+            }
+        }
+
+        // ══ Changelog ══
+        private void BtnChangelog_Click(object sender, RoutedEventArgs e)
+        {
+            var ventana = new VentanaChangelog();
             ventana.Owner = this;
             ventana.ShowDialog();
         }

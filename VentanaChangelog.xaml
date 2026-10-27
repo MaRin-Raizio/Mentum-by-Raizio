@@ -1,0 +1,298 @@
+<Window
+    x:Class="MentumLauncher.VentanaChangelog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Historial de versiones"
+    Width="640"
+    Height="640"
+    MinHeight="480"
+    AllowsTransparency="False"
+    Background="#0F1117"
+    FontFamily="Segoe UI"
+    ResizeMode="CanMinimize"
+    WindowStyle="None">
+
+    <Window.Resources>
+
+        <Style x:Key="BaseBtn" TargetType="Button">
+            <Setter Property="Height" Value="40" />
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="bd"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="7">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.80" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.60" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="BtnNeutral"
+            BasedOn="{StaticResource BaseBtn}"
+            TargetType="Button">
+            <Setter Property="Background" Value="#181B28" />
+            <Setter Property="BorderBrush" Value="#252836" />
+            <Setter Property="Foreground" Value="#9CA3AF" />
+        </Style>
+
+        <Style x:Key="TitleBtn" TargetType="Button">
+            <Setter Property="Width" Value="36" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#181B28" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style
+            x:Key="TitleBtnClose"
+            BasedOn="{StaticResource TitleBtn}"
+            TargetType="Button">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border
+                            x:Name="bd"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#200F0F" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="VersionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="#D1D5DB" />
+            <Setter Property="Margin" Value="0,18,0,2" />
+        </Style>
+
+        <Style x:Key="VersionSubtitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="#6B7280" />
+            <Setter Property="FontStyle" Value="Italic" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style x:Key="Bullet" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="#9CA3AF" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+    </Window.Resources>
+
+    <Border BorderBrush="#252836" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52" />
+                <RowDefinition Height="1" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!--  ══ BARRA DE TÍTULO ══  -->
+            <Grid
+                Grid.Row="0"
+                Background="#181B28"
+                MouseDown="TitleBar_MouseDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel
+                    Grid.Column="0"
+                    Margin="16,0,0,0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Border
+                        Width="36"
+                        Height="36"
+                        Margin="0,0,12,0"
+                        Background="#181B28"
+                        BorderBrush="#6B7280"
+                        BorderThickness="1"
+                        CornerRadius="8">
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            FontSize="16"
+                            Text="📜" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock
+                            FontSize="14"
+                            FontWeight="SemiBold"
+                            Foreground="#D1D5DB"
+                            LineHeight="16"
+                            Text="Historial de versiones" />
+                        <TextBlock
+                            FontFamily="Consolas"
+                            FontSize="10"
+                            Foreground="#4B5563"
+                            LineHeight="14"
+                            Text="qué ha cambiado en cada entrega de Mentum" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Column="2"
+                    Margin="0,0,10,0"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal">
+                    <Button
+                        Click="BtnMinimize_Click"
+                        Content="—"
+                        FontFamily="Consolas"
+                        Foreground="#9CA3AF"
+                        Style="{StaticResource TitleBtn}" />
+                    <Button
+                        Click="BtnClose_Click"
+                        Content="✕"
+                        FontFamily="Consolas"
+                        Foreground="#FCA5A5"
+                        Style="{StaticResource TitleBtnClose}" />
+                </StackPanel>
+            </Grid>
+
+            <Rectangle
+                Grid.Row="1"
+                Height="1"
+                Fill="#252836" />
+
+            <!--  ══ CONTENIDO ══  -->
+            <Grid Grid.Row="2" Margin="22,16,22,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="12" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Border
+                    Grid.Row="0"
+                    Background="#080A0F"
+                    BorderBrush="#1E2130"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                    <ScrollViewer Padding="16,10" VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <TextBlock Style="{StaticResource VersionHeader}" Text="v2.4.0 — El Yunque" />
+                            <TextBlock Style="{StaticResource VersionSubtitle}" Text="Herramientas avanzadas renovadas y nuevas funciones de seguridad" />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Herramientas avanzadas renovada por completo: más de 60 comandos organizados por categoría, con buscador en vivo." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• La ejecución de comandos ya no congela Mentum, incluso con herramientas que abren su propia ventana (winver, dxdiag, msinfo32, eventvwr)." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Nuevo botón para verificar el estado de Windows Defender y el Firewall. Reconoce si hay un antivirus de terceros activo y distingue los restos de uno ya desinstalado." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Nuevo reporte de batería con un clic, generado por el propio Windows y abierto en tu navegador." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Este historial de versiones, para no tener que salir de Mentum a revisar qué cambió." />
+
+                            <TextBlock Style="{StaticResource VersionHeader}" Text="v2.3.1 — Camino de la Forja" />
+                            <TextBlock Style="{StaticResource VersionSubtitle}" Text="Corrige errores de ejecución de la 2.3.0 y afina funciones clave" />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Reparar accesos directos ya no provoca crash: el escaneo maneja los permisos carpeta por carpeta." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Velocidad de red en Windows 10: se reemplazó PerformanceCounter por NetworkInterface, más estable y confiable." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Programas de inicio ahora es una ventana completa que permite habilitar o deshabilitar programas de forma reversible." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Aviso de reinicio pendiente cuando SFC, DISM o CHKDSK lo requieren. CHKDSK programa la comprobación en el próximo arranque." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Chequeo rápido de conexión (máximo 3 segundos) antes de la prueba de velocidad." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Nuevo botón Probar velocidad: prueba real de descarga vía Cloudflare, con servidor de respaldo." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• La tarjeta Velocidad de red pasa a llamarse Actividad de red, para distinguirla de la prueba de velocidad." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Tema claro suavizado: de verde brillante a un tono crema cálido, más amable en sesiones largas." />
+
+                            <TextBlock Style="{StaticResource VersionHeader}" Text="v2.3.0 — Luz y precisión" />
+                            <TextBlock Style="{StaticResource VersionSubtitle}" Text="Claridad en la interfaz, seguridad reforzada y correcciones finas" />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Tema claro/oscuro con botón ☀/🌙 en la barra de título. La preferencia se guarda en el registro de Windows." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Nueva sección Seguridad y Privacidad: Limpiar historial, Reparar accesos directos y Programas de inicio." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Limpiar historial y Reparar accesos directos también se ejecutan dentro del Mantenimiento completo." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Velocidad de red en tiempo real en Información del sistema, con cambio automático entre KB/s y MB/s." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Fix crítico: ya se vacía correctamente la papelera durante la limpieza profunda." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Corregido el desalineamiento de filas que dejaba fuera de la ventana la barra de progreso, el log y el pie, y las listas vacías de Información del sistema." />
+
+                            <TextBlock Style="{StaticResource VersionHeader}" Text="v2.2.0 — Corte de precisión" />
+                            <TextBlock Style="{StaticResource VersionSubtitle}" Text="Nuevas funciones, mejoras arquitectónicas y correcciones finas" />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Limpieza profunda del sistema en 8 etapas: cleanmgr, caché de Windows Update, Temp, Prefetch, papelera y miniaturas." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Botón para cancelar la operación en curso, visible solo mientras hay un proceso corriendo." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Exportar el log a un archivo .txt en el escritorio, con fecha y hora en el nombre." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Indicador de tiempo transcurrido y tooltips descriptivos en los botones de acción." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Confirmación antes de CHKDSK, Limpieza profunda y Mantenimiento completo, con un estimado de duración." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Opciones avanzadas renovadas: sin comandos duplicados y con nuevas herramientas útiles." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• ScrollBar personalizado integrado al diseño oscuro y ventana más alta (de 660 a 740 px) para ver mejor el log." />
+
+                            <TextBlock Style="{StaticResource VersionHeader}" Text="v2.1.0 — Horizonte Armónico" />
+                            <TextBlock Style="{StaticResource VersionSubtitle}" Text="Precisión técnica unida a un diseño renovado" />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Versiones aisladas en AssemblyInfo.cs y corregido el error que trataba 2.0.0 como más nuevo que 2.0.0." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Nuevo diseño en la ventana principal, la avanzada y la de información del sistema. Las ventanas emergentes (actualizaciones, despedida) se armonizan con él." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Clase central para ventanas emergentes, botones bloqueados durante las ejecuciones e instalador más ligero (ya no incluye el portable)." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Corregido el congelamiento de la interfaz al ejecutar sfc /scannow y los diálogos del buscador de actualizaciones." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Barra de progreso verde en éxito y roja en error." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Alertas al terminar una ejecución: sonido según el resultado, restauración de la ventana y parpadeo en la barra de tareas." />
+
+                            <TextBlock Style="{StaticResource VersionHeader}" Text="v2.0.0 — Instalador y portable" />
+                            <TextBlock Style="{StaticResource VersionSubtitle}" Text="Primera versión oficial con interfaz visual en WPF" />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Se deja atrás el .bat: Mentum se convierte en una aplicación de escritorio moderna." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Por primera vez se incluyen instalador y versión portable." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Botones con nombres claros, información del sistema y herramientas avanzadas en ventanas separadas, registro de acciones en tiempo real y barra de progreso." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Firma morada con enlaces a TikTok y Ko-fi, desde donde ya se puede apoyar el proyecto." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Proyecto de código abierto: el código fuente completo está disponible para revisarlo." />
+
+                            <TextBlock Style="{StaticResource VersionHeader}" Text="v1.2.4 — Primer Launcher en .exe" />
+                            <TextBlock Style="{StaticResource VersionSubtitle}" Text="Mentum recibe su nombre y su primer ejecutable" />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Nace el nombre Mentum, a partir de mantenimiento y del sufijo latino -mentum (acción, efecto o proceso)." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• Primer .exe oficial, con permisos de administrador automáticos e ícono verde." />
+                            <TextBlock Style="{StaticResource Bullet}" Text="• El menú se compacta de 12 a 9 opciones, agrupando tareas redundantes." />
+
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+
+                <Button
+                    Grid.Row="2"
+                    Click="BtnClose_Click"
+                    Content="← Regresar al menú principal"
+                    Style="{StaticResource BtnNeutral}" />
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
